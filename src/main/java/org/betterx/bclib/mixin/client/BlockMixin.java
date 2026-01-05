@@ -1,0 +1,33 @@
+package org.betterx.bclib.mixin.client;
+
+import org.betterx.bclib.interfaces.SurvivesOnSpecialGround;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.block.Block;
+
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
+
+@Mixin(value = Block.class, remap = false)
+public class BlockMixin {
+    // require=0 makes this injection optional so it won't crash if the signature drifts between mappings
+    @Inject(method = "appendHoverText", at = @At("HEAD"), require = 0, remap = false)
+    void bclib_appendSurvivalBlock(
+            ItemStack itemStack,
+            Item.TooltipContext tooltipContext,
+            List<Component> list,
+            TooltipFlag tooltipFlag,
+            CallbackInfo ci
+    ) {
+        if (this instanceof SurvivesOnSpecialGround surv) {
+            SurvivesOnSpecialGround.appendHoverText(surv, list);
+        }
+    }
+}

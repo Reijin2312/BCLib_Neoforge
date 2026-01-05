@@ -1,0 +1,33 @@
+package org.betterx.bclib.mixin.common;
+
+import org.betterx.wover.tag.api.predefined.CommonBlockTags;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.state.BlockState;
+
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin(value = PistonBaseBlock.class, remap = false)
+public class PistonBaseBlockMixin {
+    @Inject(method = "isPushable", at = @At("HEAD"), cancellable = true, remap = false)
+    private static void bclib_isPushable(
+            BlockState blockState,
+            Level level,
+            BlockPos blockPos,
+            Direction direction,
+            boolean bl,
+            Direction direction2,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
+        if (blockState.is(CommonBlockTags.IMMOBILE)) {
+            cir.setReturnValue(false);
+            cir.cancel();
+        }
+    }
+}

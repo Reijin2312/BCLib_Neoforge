@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "refmap": "bclib.refmap.json",
+  "package": "org.betterx.bclib.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "AnvilScreenMixin",
+    "AtlasSetMixin",
+    "BlockMixin",
+    "ClientLevelMixin",
+    "ClientPacketListenerMixin",
+    "ClientRecipeBookMixin",
+    "DebugRendererMixin",
+    "FogRendererMixin",
+    "LevelRendererAccessor",
+    "LevelRendererMixin",
+    "ModelManagerMixin",
+    "boat.BoatRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

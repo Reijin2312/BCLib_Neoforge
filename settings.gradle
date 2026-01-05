@@ -1,0 +1,64 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'NeoForge'
+            url = 'https://maven.neoforged.net/releases'
+        }
+        gradlePluginPortal()
+    }
+}
+
+// #### Custom Settings ####
+
+// Change the next line to disable local lib loading
+def allowLocalLibUse = true
+
+//When true, the local lib is also used in commandline builds
+def allowLocalLibInConsoleMode = true
+
+//The path were to look for the local BCLib
+def WunderLibPath = '../WunderLib'
+def WoverPath = '../WorldWeaver'
+
+
+// #### Logic ####
+def isIDE = properties.containsKey('android.injected.invoked.from.ide')
+        || (System.getenv("XPC_SERVICE_NAME") ?: "").contains("intellij")
+        || (System.getenv("XPC_SERVICE_NAME") ?: "").contains(".idea")
+        || System.getenv("IDEA_INITIAL_DIRECTORY") != null
+
+println "IntelliJ: ${isIDE}"
+
+def WunderLibFolder = new File(WunderLibPath)
+def WoverFolder = new File(WoverPath)
+if (allowLocalLibUse && (isIDE || allowLocalLibInConsoleMode) && WunderLibFolder.exists()) {
+    println "Using local WunderLib from '${WunderLibFolder}'"
+
+    include ':wunderlib'
+    project(":wunderlib").projectDir = WunderLibFolder
+    project(':wunderlib').buildFileName = './wunderlib-composit.gradle'
+}
+
+def WoverModuleFile = new File("./wover-include.gradle")
+apply from: WoverModuleFile
+gradle.ext.set("knownWoverModules", ext.knownWoverModules)
+
+
+if (allowLocalLibUse && (isIDE || allowLocalLibInConsoleMode) && WoverFolder.exists()) {
+    println "!! Using local WorldWeaver from '${WoverFolder}'"
+
+    include ':WorldWeaver'
+    project(":WorldWeaver").projectDir = WoverFolder
+    project(':WorldWeaver').buildFileName = './build.composit.gradle'
+
+    ext.knownWoverModules.each { module ->
+        def fullName = ":WorldWeaver:${module}";
+        def path = WoverFolder.toPath().resolve(module).toFile();
+
+        include fullName
+        project(fullName).name = module
+
+        print(project(fullName).parent)
+        println "Including module ${module} from ${path}"
+    }
+}

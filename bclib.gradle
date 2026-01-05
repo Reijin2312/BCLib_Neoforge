@@ -1,0 +1,428 @@
+buildscript {
+    dependencies {
+        classpath 'org.kohsuke:github-api:1.114'
+    }
+
+    repositories {
+        gradlePluginPortal()
+    }
+}
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
+
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+def modId = project.findProperty('bclib_mod_id') ?: project.archives_base_name
+def refmapName = "${modId}.refmap.json"
+def neoformMappingsDir = file("${gradle.gradleUserHomeDir}/caches/neoformruntime/intermediate_results")
+def neoformMappingCandidates = fileTree(neoformMappingsDir) { include "mergeMappings*_output.tsrg" }
+def resolveNeoformMappingFile = {
+    def candidates = neoformMappingCandidates.files
+    return candidates.isEmpty() ? null : candidates.max { it.lastModified() }
+}
+def mixinMappingsFile = layout.buildDirectory.file("mappings/${modId}-mixin-reobf.tsrg")
+def mixinOutMappingsFile = layout.buildDirectory.file("mappings/${modId}-mixin-out.tsrg")
+
+repositories {
+    maven { url 'https://maven.neoforged.net/releases' }
+    maven { url "https://maven.dblsaiko.net/" }
+    maven { url "https://maven.shedaniel.me/" }
+    maven { url 'https://maven.blamejared.com' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://maven.terraformersmc.com/releases' }
+    maven { url 'https://maven.terraformersmc.com' }
+    maven { url 'https://maven.ambertation.de/releases' }
+}
+
+java {
+    withSourcesJar()
+}
+
+def local_wunderlib = findProject(':wunderlib') != null
+def local_wover = findProject(':WorldWeaver') != null
+
+neoForge {
+    version = project.neoforge_version
+    accessTransformers = files("src/main/resources/META-INF/accesstransformer.cfg")
+    runs {
+        client {
+            client()
+        }
+        server {
+            server()
+        }
+        data {
+            data()
+            programArguments.addAll(
+                    "--mod", archivesBaseName,
+                    "--all",
+                    "--output", file("src/main/generated").toString(),
+                    "--existing", file("src/main/resources").toString()
+            )
+        }
+    }
+    mods {
+        "${archivesBaseName}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+
+sourceSets {
+    main {
+        // Add the datagenned files into the jar.
+        resources {
+            srcDirs += [
+                    'src/main/generated'
+            ]
+        }
+    }
+}
+
+dependencies {
+    // NeoForge dependency is provided by the moddev plugin via neoForge version config.
+
+    // MixinExtras + Mixin AP for refmap generation
+    compileOnly "io.github.llamalad7:mixinextras-neoforge:0.5.0"
+    annotationProcessor "org.spongepowered:mixin:0.8.7:processor"
+
+    compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
+    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
+
+    println "Using local WunderLib: ${local_wunderlib}"
+    if (local_wunderlib) {
+        implementation project(path: ":wunderlib")
+    } else if (local_wover) {
+        implementation "de.ambertation:wunderlib:${project.wunderlib_version}"
+    }
+
+    println "Using local WorldWeaver: ${local_wover}"
+    if (local_wover) {
+        implementation project(path: ":WorldWeaver")
+
+        gradle.knownWoverModules.each {
+            implementation project(path: ":WorldWeaver:$it")
+        }
+    } else {
+        implementation "org.betterx:worldweaver:${project.wover_version}"
+    }
+}
+
+processResources {
+    println "Version: ${project.mod_version}"
+    inputs.property "version", project.mod_version
+
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand(
+                "mod_id": project.archives_base_name,
+                "version": project.mod_version,
+                "minecraft_version": project.minecraft_version,
+                "neoforge_version": project.neoforge_version
+        )
+    }
+}
+
+tasks.matching { it.name == "createMinecraftArtifacts" }.configureEach {
+    doNotTrackState("Work around Gradle 8.8 state tracking for moddev task outputs.")
+}
+
+// ensure that the encoding is set to UTF-8, no matter what the system default is
+// this fixes some edge cases with special characters not displaying correctly
+// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    tasks.withType(JavaCompile).configureEach {
+        def refmapOutput = layout.buildDirectory.file("resources/main/${refmapName}").get().asFile
+        options.encoding = "UTF-8"
+        it.options.release = 21
+        options.compilerArgs += [
+            "-AoutRefMapFile=${refmapOutput}",
+            "-AoutTsrgFile=${mixinOutMappingsFile.get().asFile}",
+            "-AmappingTypes=tsrg",
+            "-ApluginVersion=0.8",
+            "-AdefaultObfuscationEnv=searge"
+    ]
+        dependsOn(tasks.named("generateMixinMappings"))
+        doFirst {
+            def args = options.compilerArgs
+            args.removeAll { it.startsWith("-AreobfTsrgFile=") }
+            def mappingFile = resolveNeoformMappingFile()
+            if (mappingFile != null) {
+                args.add("-AreobfTsrgFile=${mixinMappingsFile.get().asFile}")
+            } else {
+                logger.warn("NeoForm tsrg mappings not found in ${neoformMappingsDir}; mixin refmap generation may fail.")
+            }
+        }
+    }
+
+tasks.register("generateMixinMappings") {
+    inputs.files(neoformMappingCandidates)
+    outputs.file(mixinMappingsFile)
+    doLast {
+        def inputFile = resolveNeoformMappingFile()
+        if (inputFile == null) {
+            logger.warn("NeoForm tsrg mappings not found in ${neoformMappingsDir}; mixin mapping generation skipped.")
+            return
+        }
+        def outputFile = mixinMappingsFile.get().asFile
+        outputFile.parentFile.mkdirs()
+
+        def lines = inputFile.readLines("UTF-8")
+        def looksNamed = { String name ->
+            name != null && (name.contains("/") || name.contains("."))
+        }
+
+        int leftNamed = 0
+        int rightNamed = 0
+        int sampled = 0
+        for (def line : lines) {
+            if (line.startsWith("tsrg2") || line.startsWith("\t") || line.trim().isEmpty()) {
+                continue
+            }
+            def parts = line.trim().split("\\s+")
+            if (parts.length >= 2) {
+                if (looksNamed(parts[0])) {
+                    leftNamed++
+                }
+                if (looksNamed(parts[1])) {
+                    rightNamed++
+                }
+                sampled++
+                if (sampled >= 200) {
+                    break
+                }
+            }
+        }
+        def direction = rightNamed >= leftNamed ? "obf-to-named" : "named-to-obf"
+
+        def classMap = [:]
+        for (def line : lines) {
+            if (line.startsWith("tsrg2") || line.startsWith("\t") || line.trim().isEmpty()) {
+                continue
+            }
+            def parts = line.trim().split("\\s+")
+            if (parts.length >= 2) {
+                def left = parts[0]
+                def right = parts[1]
+                if (direction == "obf-to-named") {
+                    classMap[left] = right
+                } else {
+                    classMap[right] = left
+                }
+            }
+        }
+
+        def mapDesc = { String desc ->
+            def sb = new StringBuilder(desc.length())
+            int i = 0
+            while (i < desc.length()) {
+                char c = desc.charAt(i)
+                if (c == 'L') {
+                    int semi = desc.indexOf(';', i)
+                    if (semi == -1) {
+                        sb.append(desc.substring(i))
+                        break
+                    }
+                    def typeName = desc.substring(i + 1, semi)
+                    def mapped = classMap.get(typeName, typeName)
+                    sb.append('L').append(mapped).append(';')
+                    i = semi + 1
+                } else {
+                    sb.append(c)
+                    i++
+                }
+            }
+            return sb.toString()
+        }
+
+        def outLines = ["tsrg2 searge notch"]
+        for (def line : lines) {
+            if (line.startsWith("tsrg2") || line.trim().isEmpty()) {
+                continue
+            }
+            if (line.startsWith("\t\t")) {
+                outLines << line
+                continue
+            }
+            if (line.startsWith("\t")) {
+                def trimmed = line.trim()
+                def parts = trimmed.split("\\s+")
+                if (parts.length == 2) {
+                    def leftName = parts[0]
+                    def rightName = parts[1]
+                    def obfName = direction == "obf-to-named" ? leftName : rightName
+                    def namedName = direction == "obf-to-named" ? rightName : leftName
+                    outLines << "\t${namedName} ${obfName}"
+                } else if (parts.length >= 3) {
+                    def leftName = parts[0]
+                    def leftDesc = parts[1]
+                    def rightName = parts[2]
+                    def obfName = direction == "obf-to-named" ? leftName : rightName
+                    def namedName = direction == "obf-to-named" ? rightName : leftName
+                    def namedDesc = mapDesc(leftDesc)
+                    outLines << "\t${namedName} ${namedDesc} ${obfName}"
+                }
+                continue
+            }
+            def parts = line.trim().split("\\s+")
+            if (parts.length >= 2) {
+                def left = parts[0]
+                def right = parts[1]
+                def obfName = direction == "obf-to-named" ? left : right
+                def namedName = direction == "obf-to-named" ? right : left
+                outLines << "${namedName} ${obfName}"
+            }
+        }
+
+        outputFile.text = outLines.join(System.lineSeparator())
+    }
+}
+
+tasks.register("fixMixinRefmap") {
+    def refmapFile = layout.buildDirectory.file("resources/main/${refmapName}")
+    inputs.file(refmapFile)
+    outputs.file(refmapFile)
+    dependsOn(tasks.named("processResources"))
+    dependsOn(tasks.named("compileJava"))
+    doLast {
+        def file = refmapFile.get().asFile
+        if (!file.exists()) {
+            logger.warn("Refmap not found at ${file}")
+            return
+        }
+        def json = new groovy.json.JsonSlurper().parse(file)
+        def stripOwnerIfNeeded = { String key, String value ->
+            if (value == null) {
+                return value
+            }
+            def ownerQualified = key.startsWith("L") && key.contains(";")
+            if (ownerQualified) {
+                return value
+            }
+            if (value.startsWith("L")) {
+                int semi = value.indexOf(';')
+                if (semi > 0 && semi + 1 < value.length()) {
+                    return value.substring(semi + 1)
+                }
+            }
+            return value
+        }
+
+        def fixSection = { Map section ->
+            section.each { mixinClass, mappings ->
+                if (!(mappings instanceof Map)) {
+                    return
+                }
+                mappings.keySet().each { key ->
+                    def original = mappings[key]
+                    if (original instanceof String) {
+                        mappings[key] = stripOwnerIfNeeded(key, original)
+                    }
+                }
+            }
+        }
+
+        if (json.mappings instanceof Map) {
+            fixSection(json.mappings as Map)
+        }
+        if (json.data instanceof Map) {
+            json.data.each { env, mappings ->
+                if (mappings instanceof Map) {
+                    fixSection(mappings as Map)
+                }
+            }
+        }
+
+        file.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
+    }
+}
+
+javadoc {
+    options {
+        source = "17"
+        encoding = "UTF-8"
+        charSet = "UTF-8"
+        tags = ["reason"]
+        memberLevel = JavadocMemberLevel.PROTECTED
+        links("https://docs.oracle.com/en/java/javase/17/docs/api/")
+        // Disable the crazy super-strict doclint tool in Java 8
+        addStringOption("Xdoclint:none", "-quiet")
+        addStringOption("noqualifier", "net.minecraft.*:com.mojang.*:net.neoforged.*")
+        addBooleanOption("-allow-script-in-comments", true)
+        tags(
+                'apiNote:a:API Note:',
+                'implSpec:a:Implementation Requirements:',
+                'implNote:a:Implementation Note:'
+        )
+        stylesheetFile = new File(projectDir, "javadoc.css")
+    };
+}
+
+subprojects { subproject ->
+    subproject.tasks.withType(Javadoc) { javadocTask ->
+        javadocTask.failOnError false
+        javadocTask.enabled = false
+    }
+
+    subproject.tasks.withType(Jar) { jarTask ->
+        if (jarTask.name == 'javadocJar') {
+            jarTask.enabled = false
+        }
+    }
+}
+
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+// if it is present.
+// If you remove this task, sources will not be generated.
+tasks.sourcesJar {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+jar {
+    dependsOn("fixMixinRefmap")
+    dependsOn(tasks.matching { it.name == "runData" })
+    from("src/main/generated")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from "LICENSE"
+    from "LICENSE.ASSETS"
+}
+
+configurations {
+    dev {
+        transitive true
+        canBeConsumed true
+        canBeResolved false
+        extendsFrom api
+    }
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+    dev jar
+}
+
+tasks.named("compileJava") {
+    finalizedBy(tasks.named("fixMixinRefmap"))
+}
+
+tasks.matching { it.name == "runData" }.configureEach {
+    dependsOn(tasks.named("fixMixinRefmap"))
+}
+
+allprojects {
+    // Allow 400 errors.
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xmaxerrs" << "5000"
+        }
+    }
+}

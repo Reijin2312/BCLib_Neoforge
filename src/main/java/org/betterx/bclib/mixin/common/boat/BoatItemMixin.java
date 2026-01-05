@@ -1,0 +1,30 @@
+package org.betterx.bclib.mixin.common.boat;
+
+import org.betterx.bclib.items.boat.CustomBoatTypeOverride;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.BoatItem;
+
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+
+@Mixin(value = BoatItem.class, remap = false)
+public class BoatItemMixin {
+    @ModifyArg(
+            method = "use",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/Level;noCollision(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Z"
+            ),
+            remap = false
+    )
+    Entity bcl_suse(Entity boat) {
+        if (this instanceof CustomBoatTypeOverride self) {
+            if (boat instanceof CustomBoatTypeOverride newBoat) {
+                newBoat.bcl_setCustomType(self.bcl_getCustomType());
+            }
+        }
+        return boat;
+    }
+}

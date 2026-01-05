@@ -1,0 +1,6 @@
+{
+  "parent": "bclib:block/chest_item",
+  "textures": {
+    "texture": "%modid%:block/chest/%texture%"
+  }
+}
