@@ -50,7 +50,8 @@ public class ConnectorClientside extends Connector {
         this.client = null;
     }
 
-    public void sendToServer(BaseDataHandler h) {
+    @Override
+    public void sendToServer(BaseDataHandler<?> h) {
         if (client == null) {
             throw new RuntimeException("[internal error] Client not initialized yet!");
         }

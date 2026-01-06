@@ -2,8 +2,6 @@ package org.betterx.bclib.api.v2.dataexchange.handler;
 
 import org.betterx.bclib.api.v2.dataexchange.*;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -11,7 +9,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.HashSet;
@@ -31,13 +28,13 @@ abstract public class DataExchange {
     }
 
     protected ConnectorServerside server;
-    protected ConnectorClientside client;
+    protected Connector client;
     protected final Set<DataHandlerDescriptor> descriptors;
 
 
     private final boolean didLoadSyncFolder = false;
 
-    abstract protected ConnectorClientside clientSupplier(DataExchange api);
+    abstract protected Connector clientSupplier(DataExchange api);
 
     abstract protected ConnectorServerside serverSupplier(DataExchange api);
 
@@ -109,28 +106,6 @@ abstract public class DataExchange {
                 }
             }
         });
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private static ClientPacketListener lastClientConnection;
-
-    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
-        Minecraft client = Minecraft.getInstance();
-        ClientPacketListener connection = client.getConnection();
-        if (connection == lastClientConnection) {
-            return;
-        }
-        DataExchange api = getInstance();
-        if (connection != null) {
-            api.initClientside();
-            api.client.onPlayInit(connection, client);
-            api.client.onPlayReady(connection, client);
-        } else if (lastClientConnection != null) {
-            api.client.onPlayDisconnect(lastClientConnection, client);
-        }
-        lastClientConnection = connection;
     }
 
     @SubscribeEvent
