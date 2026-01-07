@@ -50,6 +50,8 @@ public class CommandRegistry {
         bnContext = PlaceCommand.register(bnContext, commandBuildContext);
         bnContext = PrintInfo.register(bnContext);
         bnContext = DumpMap.register(bnContext);
+        bnContext = BlockStateIdCommand.register(bnContext);
+        bnContext = BlockStateDumpCommand.register(bnContext);
 
         dispatcher.register(
                 bnContext
