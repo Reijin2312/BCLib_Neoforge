@@ -9,15 +9,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-@Mixin(value = BoatItem.class, remap = false)
+@Mixin(value = BoatItem.class)
 public class BoatItemMixin {
     @ModifyArg(
             method = "use",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/level/Level;noCollision(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Z"
-            ),
-            remap = false
+            )
     )
     Entity bcl_suse(Entity boat) {
         if (this instanceof CustomBoatTypeOverride self) {
@@ -28,3 +27,6 @@ public class BoatItemMixin {
         return boat;
     }
 }
+
+
+

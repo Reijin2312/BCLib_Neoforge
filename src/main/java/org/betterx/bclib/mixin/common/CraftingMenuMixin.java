@@ -15,13 +15,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = CraftingMenu.class, remap = false)
+@Mixin(value = CraftingMenu.class)
 public abstract class CraftingMenuMixin {
     @Final
     @Shadow
     private ContainerLevelAccess access;
 
-    @Inject(method = "stillValid", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "stillValid", at = @At("HEAD"), cancellable = true)
     private void bclib_stillValid(Player player, CallbackInfoReturnable<Boolean> info) {
         if (access.evaluate((world, pos) -> {
             BlockState state = world.getBlockState(pos);
@@ -31,3 +31,6 @@ public abstract class CraftingMenuMixin {
         }
     }
 }
+
+
+

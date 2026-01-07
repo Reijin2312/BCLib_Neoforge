@@ -16,24 +16,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-@Mixin(value = BiomeGenerationSettings.class, remap = false)
+@Mixin(value = BiomeGenerationSettings.class)
 public interface BiomeGenerationSettingsAccessor {
-    @Accessor(value = "features", remap = false)
+    @Accessor(value = "features")
     List<HolderSet<PlacedFeature>> bclib_getFeatures();
 
-    @Accessor(value = "features", remap = false)
+    @Accessor(value = "features")
     @Mutable
     void bclib_setFeatures(List<HolderSet<PlacedFeature>> value);
 
-    @Accessor(value = "featureSet", remap = false)
+    @Accessor(value = "featureSet")
     void bclib_setFeatureSet(Supplier<Set<PlacedFeature>> featureSet);
 
-    @Accessor(value = "flowerFeatures", remap = false)
+    @Accessor(value = "flowerFeatures")
     void bclib_setFlowerFeatures(Supplier<List<ConfiguredFeature<?, ?>>> flowerFeatures);
 
-    @Accessor(value = "carvers", remap = false)
+    @Accessor(value = "carvers")
     Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> bclib_getCarvers();
 
-    @Accessor(value = "carvers", remap = false)
+    @Accessor(value = "carvers")
     void bclib_setCarvers(Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> features);
 }
+
+
+

@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.jetbrains.annotations.Nullable;
 
-@Mixin(value = LevelRenderer.class, remap = false)
+@Mixin(value = LevelRenderer.class)
 @OnlyIn(Dist.CLIENT)
 public abstract class LevelRendererMixin implements LevelRendererAccess {
     @Final
@@ -61,4 +61,7 @@ public abstract class LevelRendererMixin implements LevelRendererAccess {
             double i
     );
 }
+
+
+
 

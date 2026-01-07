@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.jetbrains.annotations.Nullable;
 
-@Mixin(value = ClientLevel.class, remap = false)
+@Mixin(value = ClientLevel.class)
 @OnlyIn(Dist.CLIENT)
 public class ClientLevelMixin implements ClientLevelAccess {
     @Shadow
@@ -51,4 +51,7 @@ public class ClientLevelMixin implements ClientLevelAccess {
         return null;
     }
 }
+
+
+
 

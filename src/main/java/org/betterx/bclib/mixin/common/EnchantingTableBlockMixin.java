@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = EnchantingTableBlock.class, remap = false)
+@Mixin(value = EnchantingTableBlock.class)
 public abstract class EnchantingTableBlockMixin extends Block {
     public EnchantingTableBlockMixin(Properties settings) {
         super(settings);
@@ -19,8 +19,7 @@ public abstract class EnchantingTableBlockMixin extends Block {
     @Inject(
             method = "isValidBookShelf(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Z",
             at = @At("HEAD"),
-            cancellable = true,
-            remap = false
+            cancellable = true
     )
     private static void bclib_isBookshelf(
             Level level,
@@ -36,3 +35,6 @@ public abstract class EnchantingTableBlockMixin extends Block {
         }
     }
 }
+
+
+

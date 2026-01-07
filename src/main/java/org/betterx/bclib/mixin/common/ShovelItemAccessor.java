@@ -9,10 +9,13 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Map;
 
-@Mixin(value = ShovelItem.class, remap = false)
+@Mixin(value = ShovelItem.class)
 public interface ShovelItemAccessor {
-    @Accessor(value = "FLATTENABLES", remap = false)
+    @Accessor(value = "FLATTENABLES")
     static Map<Block, BlockState> bclib_getFlattenables() {
         throw new AssertionError("@Accessor dummy body called");
     }
 }
+
+
+

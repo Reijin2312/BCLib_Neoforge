@@ -13,12 +13,11 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import java.util.List;
 
-@Mixin(value = SpriteSourceList.class, remap = false)
+@Mixin(value = SpriteSourceList.class)
 public class AtlasSetMixin {
     @ModifyVariable(
             method = "load",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/texture/atlas/SpriteSourceList;<init>(Ljava/util/List;)V"),
-            remap = false
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/texture/atlas/SpriteSourceList;<init>(Ljava/util/List;)V")
     )
     private static List<SpriteSource> bcl_load(
             List<SpriteSource> list,
@@ -29,3 +28,6 @@ public class AtlasSetMixin {
         return list;
     }
 }
+
+
+

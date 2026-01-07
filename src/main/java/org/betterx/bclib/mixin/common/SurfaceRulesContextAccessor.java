@@ -12,41 +12,44 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.function.Supplier;
 
-@Mixin(value = SurfaceRules.Context.class, remap = false)
+@Mixin(value = SurfaceRules.Context.class)
 public interface SurfaceRulesContextAccessor {
-    @Accessor(value = "blockX", remap = false)
+    @Accessor(value = "blockX")
     int getBlockX();
 
-    @Accessor(value = "blockY", remap = false)
+    @Accessor(value = "blockY")
     int getBlockY();
 
-    @Accessor(value = "blockZ", remap = false)
+    @Accessor(value = "blockZ")
     int getBlockZ();
 
-    @Accessor(value = "surfaceDepth", remap = false)
+    @Accessor(value = "surfaceDepth")
     int getSurfaceDepth();
 
-    @Accessor(value = "biome", remap = false)
+    @Accessor(value = "biome")
     Supplier<Holder<Biome>> getBiome();
 
-    @Accessor(value = "chunk", remap = false)
+    @Accessor(value = "chunk")
     ChunkAccess getChunk();
 
-    @Accessor(value = "noiseChunk", remap = false)
+    @Accessor(value = "noiseChunk")
     NoiseChunk getNoiseChunk();
 
-    @Accessor(value = "stoneDepthAbove", remap = false)
+    @Accessor(value = "stoneDepthAbove")
     int getStoneDepthAbove();
 
-    @Accessor(value = "stoneDepthBelow", remap = false)
+    @Accessor(value = "stoneDepthBelow")
     int getStoneDepthBelow();
 
-    @Accessor(value = "lastUpdateY", remap = false)
+    @Accessor(value = "lastUpdateY")
     long getLastUpdateY();
 
-    @Accessor(value = "lastUpdateXZ", remap = false)
+    @Accessor(value = "lastUpdateXZ")
     long getLastUpdateXZ();
 
-    @Accessor(value = "randomState", remap = false)
+    @Accessor(value = "randomState")
     RandomState getRandomState();
 }
+
+
+

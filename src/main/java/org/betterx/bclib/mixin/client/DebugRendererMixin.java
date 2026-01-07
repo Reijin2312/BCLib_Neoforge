@@ -28,10 +28,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = DebugRenderer.class, remap = false)
+@Mixin(value = DebugRenderer.class)
 @OnlyIn(Dist.CLIENT)
 public class DebugRendererMixin {
-    @Inject(method = "render", at = @At("TAIL"), remap = false)
+    @Inject(method = "render", at = @At("TAIL"))
     void bcl_render(
             PoseStack poseStack,
             MultiBufferSource.BufferSource bufferSource,
@@ -69,4 +69,7 @@ public class DebugRendererMixin {
         }
     }
 }
+
+
+
 

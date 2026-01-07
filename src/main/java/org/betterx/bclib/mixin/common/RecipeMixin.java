@@ -19,12 +19,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-@Mixin(value = Recipe.class, remap = false)
+@Mixin(value = Recipe.class)
 public interface RecipeMixin<C extends RecipeInput> {
     //Water Bottles are potions and they do not return an empty bottle in crafting Recipes
     //This mixin will fix that behaviour
 
-    @Inject(method = "getRemainingItems", at = @At("RETURN"), remap = false)
+    @Inject(method = "getRemainingItems", at = @At("RETURN"))
     default void bcl_getRemainingItems(C container, CallbackInfoReturnable<NonNullList<ItemStack>> cir) {
         NonNullList<ItemStack> remaining = cir.getReturnValue();
 
@@ -40,3 +40,6 @@ public interface RecipeMixin<C extends RecipeInput> {
         }
     }
 }
+
+
+

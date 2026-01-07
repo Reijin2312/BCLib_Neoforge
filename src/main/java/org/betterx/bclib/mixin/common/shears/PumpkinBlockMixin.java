@@ -11,18 +11,20 @@ import net.neoforged.neoforge.common.ItemAbility;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(value = PumpkinBlock.class, remap = false)
+@Mixin(value = PumpkinBlock.class)
 public abstract class PumpkinBlockMixin {
     @WrapOperation(
             method = "useItemOn",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"
-            ),
-            remap = false
+            )
     )
     private boolean bclib_isShears(ItemStack stack, ItemAbility ability, Operation<Boolean> original) {
         // Fall back to vanilla/NeoForge check first to preserve behaviour, then allow BCLib shears.
         return original.call(stack, ability) || BaseShearsItem.isShear(stack);
     }
 }
+
+
+

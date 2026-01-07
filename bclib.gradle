@@ -87,6 +87,8 @@ dependencies {
 
     // MixinExtras + Mixin AP for refmap generation
     compileOnly "io.github.llamalad7:mixinextras-neoforge:0.5.0"
+    runtimeOnly "io.github.llamalad7:mixinextras-neoforge:0.5.0"
+    jarJar "io.github.llamalad7:mixinextras-neoforge:0.5.0"
     annotationProcessor "org.spongepowered:mixin:0.8.7:processor"
 
     compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
@@ -395,7 +397,10 @@ jar {
     from "LICENSE.ASSETS"
 }
 
+tasks.getByName("build").dependsOn("jarJar")
+
 configurations {
+    jarJar
     dev {
         transitive true
         canBeConsumed true
@@ -416,6 +421,8 @@ tasks.named("compileJava") {
 
 tasks.matching { it.name == "runData" }.configureEach {
     dependsOn(tasks.named("fixMixinRefmap"))
+    // Datagen runs against named classes; disable refmap remapping to avoid obf targets.
+    systemProperty "mixin.env.disableRefMap", "true"
 }
 
 allprojects {

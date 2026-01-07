@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-@Mixin(value = ServerLevel.class, remap = false)
+@Mixin(value = ServerLevel.class)
 public abstract class ServerLevelMixin extends Level {
     @Unique
     private static String bclib_lastWorld = null;
@@ -48,8 +48,7 @@ public abstract class ServerLevelMixin extends Level {
     @Inject(
             method = "<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/dimension/LevelStem;Lnet/minecraft/server/level/progress/ChunkProgressListener;ZJLjava/util/List;ZLnet/minecraft/world/RandomSequences;)V",
             at = @At("TAIL"),
-            require = 0, // keep optional in case constructor signature drifts
-            remap = false
+            require = 0 // keep optional in case constructor signature drifts
     )
     private void bclib_onServerWorldInit(
             MinecraftServer minecraftServer,
@@ -73,3 +72,6 @@ public abstract class ServerLevelMixin extends Level {
         bclib_lastWorld = levelStorageAccess.getLevelId();
     }
 }
+
+
+

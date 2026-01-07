@@ -11,13 +11,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = WorldGenRegion.class, remap = false)
+@Mixin(value = WorldGenRegion.class)
 public class WorldGenRegionMixin {
     @Final
     @Shadow
     private ChunkAccess center;
 
-    @Inject(method = "ensureCanWrite", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "ensureCanWrite", at = @At("HEAD"), cancellable = true)
     private void be_alterBlockCheck(BlockPos blockPos, CallbackInfoReturnable<Boolean> info) {
         int x = blockPos.getX() >> 4;
         int z = blockPos.getZ() >> 4;
@@ -25,3 +25,6 @@ public class WorldGenRegionMixin {
         info.setReturnValue(Math.abs(x - center.getPos().x) < 2 && Math.abs(z - center.getPos().z) < 2);
     }
 }
+
+
+

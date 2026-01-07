@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.List;
 import java.util.Optional;
 
-@Mixin(value = LootPool.class, remap = false)
+@Mixin(value = LootPool.class)
 public class LootPoolMixin implements LootPoolAccessor {
     @Shadow
     @Final
@@ -52,3 +52,6 @@ public class LootPoolMixin implements LootPoolAccessor {
         );
     }
 }
+
+
+

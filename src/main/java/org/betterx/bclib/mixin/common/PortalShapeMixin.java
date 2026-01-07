@@ -13,15 +13,14 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(value = PortalShape.class, remap = false)
+@Mixin(value = PortalShape.class)
 public class PortalShapeMixin {
     @Redirect(
             method = "getDistanceUntilEdgeAboveFrame",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/level/block/state/BlockBehaviour$StatePredicate;test(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z"
-            ),
-            remap = false
+            )
     )
     private boolean be_getDistanceUntilEdgeAboveFrame(
             StatePredicate statePredicate,
@@ -37,8 +36,7 @@ public class PortalShapeMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/level/block/state/BlockBehaviour$StatePredicate;test(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z"
-            ),
-            remap = false
+            )
     )
     private boolean be_hasTopFrame(
             StatePredicate statePredicate,
@@ -54,8 +52,7 @@ public class PortalShapeMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/level/block/state/BlockBehaviour$StatePredicate;test(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z"
-            ),
-            remap = false
+            )
     )
     private boolean be_getDistanceUntilTop(
             StatePredicate statePredicate,
@@ -71,3 +68,6 @@ public class PortalShapeMixin {
         return state.is(CommonBlockTags.NETHER_PORTAL_FRAME) || FRAME.test(state, getter, pos);
     }
 }
+
+
+

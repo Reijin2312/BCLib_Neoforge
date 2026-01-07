@@ -20,12 +20,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-@Mixin(value = RecipeManager.class, remap = false)
+@Mixin(value = RecipeManager.class)
 public abstract class RecipeManagerMixin {
     @Inject(
             method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V",
-            at = @At("HEAD"),
-            remap = false
+            at = @At("HEAD")
     )
     public void bcl_interceptApply(
             Map<ResourceLocation, JsonElement> map,
@@ -44,8 +43,7 @@ public abstract class RecipeManagerMixin {
     @Inject(
             method = "getRecipeFor(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/item/crafting/RecipeInput;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;",
             at = @At("HEAD"),
-            cancellable = true,
-            remap = false
+            cancellable = true
     )
     <I extends RecipeInput, T extends Recipe<I>> void bcl_sort(
             RecipeType<T> recipeType, I recipeInput, Level level, CallbackInfoReturnable<Optional<RecipeHolder<T>>> cir
@@ -75,3 +73,6 @@ public abstract class RecipeManagerMixin {
     }
 
 }
+
+
+

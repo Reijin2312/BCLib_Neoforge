@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = ClientPacketListener.class, remap = false)
+@Mixin(value = ClientPacketListener.class)
 public class ClientPacketListenerMixin {
 
     @Inject(
@@ -17,10 +17,12 @@ public class ClientPacketListenerMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/telemetry/WorldSessionTelemetryManager;onPlayerInfoReceived(Lnet/minecraft/world/level/GameType;Z)V"
-            ),
-            remap = false
+            )
     )
     public void bclib_onStart(CallbackInfo ci) {
         DataExchangeAPI.sendOnEnter();
     }
 }
+
+
+

@@ -11,10 +11,10 @@ import net.neoforged.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(value = LevelRenderer.class, remap = false)
+@Mixin(value = LevelRenderer.class)
 @OnlyIn(Dist.CLIENT)
 public interface LevelRendererAccessor {
-    @Invoker(value = "renderShape", remap = false)
+    @Invoker(value = "renderShape")
     public static void bclib_renderShape(
             PoseStack poseStack,
             VertexConsumer vertexConsumer,
@@ -30,4 +30,7 @@ public interface LevelRendererAccessor {
         throw new AssertionError();
     }
 }
+
+
+
 

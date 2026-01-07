@@ -11,17 +11,19 @@ import net.neoforged.neoforge.common.ItemAbility;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(value = BeehiveBlock.class, remap = false)
+@Mixin(value = BeehiveBlock.class)
 public class BeehiveBlockMixin {
     @WrapOperation(
             method = "useItemOn",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"
-            ),
-            remap = false
+            )
     )
     private boolean bclib_isShears(ItemStack stack, ItemAbility ability, Operation<Boolean> original) {
         return original.call(stack, ability) || BaseShearsItem.isShear(stack);
     }
 }
+
+
+

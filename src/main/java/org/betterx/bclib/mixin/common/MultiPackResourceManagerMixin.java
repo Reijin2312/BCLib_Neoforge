@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-@Mixin(value = MultiPackResourceManager.class, remap = false)
+@Mixin(value = MultiPackResourceManager.class)
 public class MultiPackResourceManagerMixin {
     @Unique
     private static final String[] BCLIB_MISSING_RESOURCES = new String[]{
@@ -22,7 +22,7 @@ public class MultiPackResourceManagerMixin {
             "dimension_type/the_nether.json"
     };
 
-    @Inject(method = "getResource", at = @At("HEAD"), cancellable = false, remap = false)
+    @Inject(method = "getResource", at = @At("HEAD"), cancellable = false)
     private void bclib_hasResource(ResourceLocation resourceLocation, CallbackInfoReturnable<Optional<Resource>> info) {
         if (resourceLocation.getNamespace().equals("minecraft")) {
             for (String key : BCLIB_MISSING_RESOURCES) {
@@ -35,3 +35,6 @@ public class MultiPackResourceManagerMixin {
         }
     }
 }
+
+
+

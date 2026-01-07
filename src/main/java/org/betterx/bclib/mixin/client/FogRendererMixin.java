@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = FogRenderer.class, remap = false)
+@Mixin(value = FogRenderer.class)
 public class FogRendererMixin {
     @Shadow
     private static float fogRed;
@@ -28,7 +28,7 @@ public class FogRendererMixin {
     @Shadow
     private static float fogBlue;
 
-    @Inject(method = "setupColor", at = @At("RETURN"), remap = false)
+    @Inject(method = "setupColor", at = @At("RETURN"))
     private static void bclib_onRender(
             Camera camera,
             float tickDelta,
@@ -57,7 +57,7 @@ public class FogRendererMixin {
         BackgroundInfo.fogColorBlue = fogBlue;
     }
 
-    @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true)
     private static void bclib_fogDensity(
             Camera camera,
             FogRenderer.FogMode fogMode,
@@ -71,3 +71,6 @@ public class FogRendererMixin {
         }
     }
 }
+
+
+

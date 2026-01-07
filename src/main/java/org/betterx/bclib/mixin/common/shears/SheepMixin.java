@@ -11,19 +11,20 @@ import net.neoforged.neoforge.common.ItemAbility;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(value = Sheep.class, remap = false)
+@Mixin(value = Sheep.class)
 public class SheepMixin {
     @WrapOperation(
             method = "mobInteract",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z",
-                    remap = false
+                    target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"
             ),
-            remap = false,
             require = 0
     )
     private boolean bclib_isShears(ItemStack stack, ItemAbility ability, Operation<Boolean> original) {
         return original.call(stack, ability) || BaseShearsItem.isShear(stack);
     }
 }
+
+
+

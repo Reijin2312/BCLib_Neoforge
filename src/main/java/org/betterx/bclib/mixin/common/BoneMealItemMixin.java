@@ -18,9 +18,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = BoneMealItem.class, remap = false)
+@Mixin(value = BoneMealItem.class)
 public class BoneMealItemMixin {
-    @Inject(method = "useOn", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
     private void bclib_onUse(UseOnContext context, CallbackInfoReturnable<InteractionResult> info) {
         Level level = context.getLevel();
         final BlockPos blockPos = context.getClickedPos();
@@ -41,7 +41,7 @@ public class BoneMealItemMixin {
         }
     }
 
-    @Inject(method = "growCrop", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "growCrop", at = @At("HEAD"), cancellable = true)
     private static void bcl_growCrop(
             ItemStack itemStack,
             Level level,
@@ -53,3 +53,6 @@ public class BoneMealItemMixin {
         }
     }
 }
+
+
+

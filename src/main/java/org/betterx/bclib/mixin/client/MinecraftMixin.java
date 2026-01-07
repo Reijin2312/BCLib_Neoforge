@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.jetbrains.annotations.Nullable;
 
-@Mixin(value = Minecraft.class, remap = false)
+@Mixin(value = Minecraft.class)
 public abstract class MinecraftMixin {
     @Final
     @Shadow
@@ -33,7 +33,7 @@ public abstract class MinecraftMixin {
     @Nullable
     public Screen screen;
 
-    @Inject(method = "<init>*", at = @At("TAIL"), remap = false)
+    @Inject(method = "<init>*", at = @At("TAIL"))
     private void bclib_onMCInit(GameConfig args, CallbackInfo info) {
         BuiltInRegistries.BLOCK.forEach(block -> {
             if (block instanceof CustomColorProvider provider) {
@@ -43,3 +43,6 @@ public abstract class MinecraftMixin {
         });
     }
 }
+
+
+

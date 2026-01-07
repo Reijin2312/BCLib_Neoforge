@@ -78,11 +78,31 @@ public final class BoatTypeOverride {
     public void createBoatModels(EntityRendererProvider.Context context) {
         if (BCLib.isClient() && boatModel == null) {
             if (isRaft) {
-                boatModel = new RaftModel(context.bakeLayer(boatModelName));
-                chestBoatModel = new ChestRaftModel(context.bakeLayer(chestBoatModelName));
+                try {
+                    boatModel = new RaftModel(context.bakeLayer(boatModelName));
+                } catch (IllegalArgumentException ex) {
+                    BCLib.LOGGER.warn("Missing model layer {}, using fallback raft model.", boatModelName, ex);
+                    boatModel = new RaftModel(RaftModel.createBodyModel().bakeRoot());
+                }
+                try {
+                    chestBoatModel = new ChestRaftModel(context.bakeLayer(chestBoatModelName));
+                } catch (IllegalArgumentException ex) {
+                    BCLib.LOGGER.warn("Missing model layer {}, using fallback chest raft model.", chestBoatModelName, ex);
+                    chestBoatModel = new ChestRaftModel(ChestRaftModel.createBodyModel().bakeRoot());
+                }
             } else {
-                boatModel = new BoatModel(context.bakeLayer(boatModelName));
-                chestBoatModel = new ChestBoatModel(context.bakeLayer(chestBoatModelName));
+                try {
+                    boatModel = new BoatModel(context.bakeLayer(boatModelName));
+                } catch (IllegalArgumentException ex) {
+                    BCLib.LOGGER.warn("Missing model layer {}, using fallback boat model.", boatModelName, ex);
+                    boatModel = new BoatModel(BoatModel.createBodyModel().bakeRoot());
+                }
+                try {
+                    chestBoatModel = new ChestBoatModel(context.bakeLayer(chestBoatModelName));
+                } catch (IllegalArgumentException ex) {
+                    BCLib.LOGGER.warn("Missing model layer {}, using fallback chest boat model.", chestBoatModelName, ex);
+                    chestBoatModel = new ChestBoatModel(ChestBoatModel.createBodyModel().bakeRoot());
+                }
             }
         }
     }

@@ -12,10 +12,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = ChestBoat.class, remap = false)
+@Mixin(value = ChestBoat.class)
 public abstract class ChestBoatMixin {
 
-    @Inject(method = "getDropItem", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "getDropItem", at = @At("HEAD"), cancellable = true)
     void bcl_getDropItem(CallbackInfoReturnable<Item> cir) {
         if (this instanceof CustomBoatTypeOverride cbto) {
             BoatTypeOverride type = cbto.bcl_getCustomType();
@@ -28,3 +28,6 @@ public abstract class ChestBoatMixin {
         }
     }
 }
+
+
+

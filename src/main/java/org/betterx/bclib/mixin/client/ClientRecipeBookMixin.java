@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = ClientRecipeBook.class, remap = false)
+@Mixin(value = ClientRecipeBook.class)
 public abstract class ClientRecipeBookMixin {
-    @Inject(method = "getCategory", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "getCategory", at = @At("HEAD"), cancellable = true)
     private static void be_getGroupForRecipe(
             RecipeHolder<?> recipe,
             CallbackInfoReturnable<RecipeBookCategories> cir
@@ -23,3 +23,6 @@ public abstract class ClientRecipeBookMixin {
         }
     }
 }
+
+
+

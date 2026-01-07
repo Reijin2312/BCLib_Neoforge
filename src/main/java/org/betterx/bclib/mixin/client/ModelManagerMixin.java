@@ -15,12 +15,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-@Mixin(value = ModelManager.class, remap = false)
+@Mixin(value = ModelManager.class)
 public class ModelManagerMixin {
     @Inject(
             method = "reload",
-            at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/util/profiling/ProfilerFiller;startTick()V"),
-            remap = false
+            at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/util/profiling/ProfilerFiller;startTick()V")
     )
     private void bclib_loadCustomModels(
             PreparableReloadListener.PreparationBarrier preparationBarrier,
@@ -34,3 +33,6 @@ public class ModelManagerMixin {
         BCLibClient.lazyModelbakery().loadCustomModels(resourceManager);
     }
 }
+
+
+

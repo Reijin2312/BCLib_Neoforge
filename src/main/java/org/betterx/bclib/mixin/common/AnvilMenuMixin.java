@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.Nullable;
 
-@Mixin(value = AnvilMenu.class, remap = false)
+@Mixin(value = AnvilMenu.class)
 public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilScreenHandlerExtended {
     @Unique
     private List<RecipeHolder<AnvilRecipe>> bcl_recipes = Collections.emptyList();
@@ -62,8 +62,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
 
     @Inject(
             method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V",
-            at = @At("TAIL"),
-            remap = false
+            at = @At("TAIL")
     )
     public void be_initAnvilLevel(int syncId, Inventory inventory, ContainerLevelAccess context, CallbackInfo info) {
         this.bcl_anvilLevel = addDataSlot(DataSlot.standalone());
@@ -81,7 +80,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
     @Shadow
     public abstract void createResult();
 
-    @Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true)
     protected void bcl_canTakeOutput(Player player, boolean present, CallbackInfoReturnable<Boolean> info) {
         if (bcl_currentRecipe != null) {
             AnvilRecipeInput recipeInput = this.bcl_AnvilRecipeInput(bcl_currentRecipe.value().getAllowedTools());
@@ -90,7 +89,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
     }
 
 
-    @Inject(method = "onTake", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "onTake", at = @At("HEAD"), cancellable = true)
     protected void bcl_onTakeAnvilOutput(Player player, ItemStack stack, CallbackInfo info) {
         if (bcl_currentRecipe != null) {
             AnvilRecipeInput recipeInput = this.bcl_AnvilRecipeInput(bcl_currentRecipe.value().getAllowedTools());
@@ -116,7 +115,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
         }
     }
 
-    @Inject(method = "onTake", at = @At("TAIL"), remap = false)
+    @Inject(method = "onTake", at = @At("TAIL"))
     private void bcl_afterOnTake(Player player, ItemStack stack, CallbackInfo info) {
         // If vanilla onTake runs (we did not cancel in HEAD), ensure BaseAnvilBlocks use their custom damage logic
         this.access.execute((level, blockPos) -> {
@@ -130,7 +129,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
         });
     }
 
-    @Inject(method = "createResult", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "createResult", at = @At("HEAD"), cancellable = true)
     public void bcl_updateOutput(CallbackInfo info) {
         AnvilRecipeInput recipeInput = this.bcl_AnvilRecipeInput(null);
         RecipeManager recipeManager = this.player.level().getRecipeManager();
@@ -152,7 +151,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
         }
     }
 
-    @Inject(method = "setItemName", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "setItemName", at = @At("HEAD"), cancellable = true)
     public void bcl_setNewItemName(String string, CallbackInfoReturnable<Boolean> cir) {
         if (bcl_currentRecipe != null) {
             cir.setReturnValue(false);
@@ -196,3 +195,6 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
         return bcl_recipes;
     }
 }
+
+
+

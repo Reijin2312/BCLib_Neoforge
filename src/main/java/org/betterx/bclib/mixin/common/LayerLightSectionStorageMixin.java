@@ -11,14 +11,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = LayerLightSectionStorage.class, remap = false)
+@Mixin(value = LayerLightSectionStorage.class)
 public class LayerLightSectionStorageMixin {
     @Shadow
     protected DataLayer getDataLayer(long sectionPos, boolean cached) {
         return null;
     }
 
-    @Inject(method = "getStoredLevel", at = @At(value = "HEAD"), cancellable = true, remap = false)
+    @Inject(method = "getStoredLevel", at = @At(value = "HEAD"), cancellable = true)
     private void bclib_lightFix(long blockPos, CallbackInfoReturnable<Integer> info) {
         try {
             long pos = SectionPos.blockToSection(blockPos);
@@ -33,3 +33,6 @@ public class LayerLightSectionStorageMixin {
         }
     }
 }
+
+
+

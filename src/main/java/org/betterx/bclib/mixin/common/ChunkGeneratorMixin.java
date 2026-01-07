@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = ChunkGenerator.class, remap = false)
+@Mixin(value = ChunkGenerator.class)
 public class ChunkGeneratorMixin {
     @Unique
     private int bclib_featureIteratorSeed;
@@ -23,14 +23,13 @@ public class ChunkGeneratorMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/level/levelgen/WorldgenRandom;setFeatureSeed(JII)V"
-            ),
-            remap = false
+            )
     )
     private long bclib_updateFeatureSeed(long seed) {
         return Long.rotateRight(seed, bclib_featureIteratorSeed++);
     }
 
-    @Inject(method = "applyBiomeDecoration", at = @At("HEAD"), remap = false)
+    @Inject(method = "applyBiomeDecoration", at = @At("HEAD"))
     private void bclib_obBiomeGenerate(
             WorldGenLevel worldGenLevel,
             ChunkAccess chunkAccess,
@@ -40,3 +39,6 @@ public class ChunkGeneratorMixin {
         bclib_featureIteratorSeed = 0;
     }
 }
+
+
+
