@@ -1,12 +1,13 @@
-name: Report a Bug
+name: Report a Bug (NeoForge)
 description: File a bug report
 title: "[Bug] "
-labels: [ "bug" ]
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report a Bug in BCLib!
+        Thanks for taking the time to report a Bug in BCLib (NeoForge)!
+
   - type: textarea
     id: what-happened
     attributes:
@@ -16,69 +17,65 @@ body:
       value: "A bug happened!"
     validations:
       required: true
+
   - type: markdown
     attributes:
       value: |
         ## Versions
+
   - type: input
     id: bcl_version
     attributes:
-      label: BCLib
+      label: BCLib (NeoForge)
       description: What version of BCLib are you running?
       placeholder: 21.x.x
     validations:
       required: true
+
   - type: input
     id: wover_version
     attributes:
-      label: WorldWeaver
+      label: WorldWeaver (NeoForge)
       description: What version of WorldWeaver are you running?
       placeholder: 21.x.x
     validations:
       required: true
+
   - type: input
-    id: fabric_api_version
+    id: neoforge_version
     attributes:
-      label: Fabric API
-      description: What version of Fabric API is installed
-      placeholder: 0.1xx.x
+      label: NeoForge
+      description: What version of NeoForge are you using?
+      placeholder: 21.x.x
     validations:
-      required: false
-  - type: input
-    id: fabric_loader_version
-    attributes:
-      label: Fabric Loader
-      description: What version of Fabric Loader do you use
-      placeholder: 0.15.x
-    validations:
-      required: false
+      required: true
+
   - type: dropdown
     id: mc_version
     attributes:
       label: Minecraft
       description: What version of Minecraft is installed?
       options:
-        - 1.21
-        - 1.20.4
-        - 1.20.3
-        - 1.20.1
-        - 1.20.0
-        - Older
+        - "1.21.1"
+        - "1.21"
     validations:
       required: true
+
   - type: markdown
     attributes:
       value: |
         ## Additional Information
+
   - type: textarea
     id: logs
     attributes:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
+
   - type: textarea
     id: other_mods
     attributes:
       label: Other Mods
-      description: If you can, please supply a list of installed Mods (besides BetterNether and BCLib). This information may already be included in the log above.
+      description: If you can, please supply a list of installed Mods. This information may already be included in the log above.
       render: shell
