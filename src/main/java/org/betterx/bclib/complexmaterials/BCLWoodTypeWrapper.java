@@ -8,8 +8,11 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
+import java.util.Map;
 import java.util.Objects;
 
 public final class BCLWoodTypeWrapper {
@@ -101,6 +104,10 @@ public final class BCLWoodTypeWrapper {
         }
 
         public BCLWoodTypeWrapper build() {
+            WoodType existing = findExistingWoodType(id);
+            if (existing != null) {
+                return new BCLWoodTypeWrapper(id, existing, color, flammable);
+            }
             if (setType == null) {
                 setType = registerBlockSetType(createBlockSetType(id));
             }
@@ -180,5 +187,41 @@ public final class BCLWoodTypeWrapper {
             throw new RuntimeException("Failed to create WoodType " + id, e);
         }
         throw new IllegalStateException("Unsupported WoodType layout for " + id);
+    }
+
+    private static WoodType findExistingWoodType(ResourceLocation id) {
+        try {
+            for (Field field : WoodType.class.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers())) continue;
+                if (!Map.class.isAssignableFrom(field.getType())) continue;
+                field.setAccessible(true);
+                Object raw = field.get(null);
+                if (!(raw instanceof Map<?, ?> map) || map.isEmpty()) continue;
+
+                WoodType found = findWoodTypeInMap(map, id);
+                if (found != null) return found;
+            }
+        } catch (ReflectiveOperationException ignored) {
+            // Fall through to normal registration path.
+        }
+        return null;
+    }
+
+    private static WoodType findWoodTypeInMap(Map<?, ?> map, ResourceLocation id) {
+        Object value = map.get(id);
+        if (value instanceof WoodType type) return type;
+        value = map.get(id.getPath());
+        if (value instanceof WoodType type) return type;
+        value = map.get(id.toString());
+        if (value instanceof WoodType type) return type;
+
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            Object key = entry.getKey();
+            Object entryValue = entry.getValue();
+            if (!(entryValue instanceof WoodType type)) continue;
+            if (key instanceof ResourceLocation rl && rl.getPath().equals(id.getPath())) return type;
+            if (key instanceof String name && name.equals(id.getPath())) return type;
+        }
+        return null;
     }
 }
