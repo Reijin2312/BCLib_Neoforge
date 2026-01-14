@@ -51,7 +51,7 @@ public abstract class BaseChair extends AbstractChair {
 
     public BaseChair(Block baseMaterial, Block clothMaterial) {
         super(baseMaterial, 10);
-        this.clothMaterial = Objects.requireNonNull(clothMaterial, "Chair cloth material cannot be null (" + baseMaterial.getDescriptionId() + ")");
+        this.clothMaterial = Objects.requireNonNull(clothMaterial, "Chair cloth material cannot be null");
         this.registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(TOP, false));
     }
 

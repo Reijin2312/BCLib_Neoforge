@@ -27,7 +27,7 @@ public abstract class BaseBarStool extends AbstractChair {
 
     public BaseBarStool(Block baseMaterial, Block clothMaterial) {
         super(baseMaterial, 15);
-        this.clothMaterial = Objects.requireNonNull(clothMaterial, "Bar Stool cloth material cannot be null (" + baseMaterial.getDescriptionId() + ")");
+        this.clothMaterial = Objects.requireNonNull(clothMaterial, "Bar Stool cloth material cannot be null");
     }
 
     @Deprecated(forRemoval = true)
