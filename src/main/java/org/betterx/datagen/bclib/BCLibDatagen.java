@@ -16,12 +16,8 @@ public class BCLibDatagen extends WoverDataGenEntryPoint {
         BCLib.LOGGER.info("Bootstrap onInitializeDataGenerator");
         globalPack.addProvider(BoneMealBlockTagProvider::new);
         globalPack.addProvider(BlockTagProvider::new);
-
-        globalPack.callOnInitializeDatapack((event, packOutput, location) -> {
-            if (location == null) {
-                event.addProvider(new BCLAdvancementDataProvider(packOutput, event.getLookupProvider()));
-            }
-        });
+        globalPack.addProvider(modCore -> (output, registries, existingFileHelper) ->
+                new BCLAdvancementDataProvider(output, registries));
     }
 
     @Override

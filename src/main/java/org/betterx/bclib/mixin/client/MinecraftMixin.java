@@ -37,8 +37,15 @@ public abstract class MinecraftMixin {
     private void bclib_onMCInit(GameConfig args, CallbackInfo info) {
         BuiltInRegistries.BLOCK.forEach(block -> {
             if (block instanceof CustomColorProvider provider) {
-                blockColors.register(provider.getProvider(), block);
-                itemColors.register(provider.getItemProvider(), block.asItem());
+                blockColors.register(
+                        (state, level, pos, tintIndex) -> provider.getProvider()
+                                                                  .getColor(state, level, pos, tintIndex),
+                        block
+                );
+                itemColors.register(
+                        (stack, tintIndex) -> provider.getItemProvider().getColor(stack, tintIndex),
+                        block.asItem()
+                );
             }
         });
     }

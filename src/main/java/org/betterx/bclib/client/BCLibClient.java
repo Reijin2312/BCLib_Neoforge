@@ -47,7 +47,11 @@ public class BCLibClient {
     public static void onRegisterBlockColors(RegisterColorHandlersEvent.Block event) {
         for (Block block : BuiltInRegistries.BLOCK) {
             if (block instanceof CustomColorProvider provider) {
-                event.register(provider.getProvider(), block);
+                event.register(
+                        (state, level, pos, tintIndex) -> provider.getProvider()
+                                                                  .getColor(state, level, pos, tintIndex),
+                        block
+                );
             }
         }
     }
@@ -56,7 +60,10 @@ public class BCLibClient {
     public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
         for (Block block : BuiltInRegistries.BLOCK) {
             if (block instanceof CustomColorProvider provider) {
-                event.register(provider.getItemProvider(), block);
+                event.register(
+                        (stack, tintIndex) -> provider.getItemProvider().getColor(stack, tintIndex),
+                        block
+                );
             }
         }
     }
