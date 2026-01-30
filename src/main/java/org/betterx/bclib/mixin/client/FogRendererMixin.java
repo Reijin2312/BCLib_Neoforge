@@ -3,6 +3,8 @@ package org.betterx.bclib.mixin.client;
 import org.betterx.bclib.client.render.CustomFogRenderer;
 import org.betterx.bclib.util.BackgroundInfo;
 
+import com.mojang.blaze3d.shaders.FogShape;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
@@ -67,6 +69,9 @@ public class FogRendererMixin {
             CallbackInfo ci
     ) {
         if (CustomFogRenderer.applyFogDensity(camera, viewDistance, thickFog)) {
+            RenderSystem.setShaderFogShape(
+                    fogMode == FogRenderer.FogMode.FOG_SKY ? FogShape.CYLINDER : FogShape.SPHERE
+            );
             ci.cancel();
         }
     }
