@@ -11,6 +11,7 @@ import org.betterx.bclib.recipes.AlloyingRecipe;
 import org.betterx.bclib.recipes.AnvilRecipe;
 import org.betterx.bclib.registry.BaseBlockEntities;
 import org.betterx.bclib.util.BCLDataComponents;
+import org.betterx.datagen.bclib.BCLibDatagen;
 import org.betterx.datagen.bclib.worldgen.BCLAutoBlockTagProvider;
 import org.betterx.datagen.bclib.worldgen.BCLAutoItemTagProvider;
 import org.betterx.wover.core.api.Logger;
@@ -72,6 +73,8 @@ public class BCLib {
         if (isDatagen()) {
             WoverDataGenEntryPoint.registerAutoProvider(BCLAutoBlockTagProvider::new);
             WoverDataGenEntryPoint.registerAutoProvider(BCLAutoItemTagProvider::new);
+            BCLibDatagen datagen = new BCLibDatagen();
+            modBus.addListener(datagen::onGatherData);
             onDatagen();
 
         }
