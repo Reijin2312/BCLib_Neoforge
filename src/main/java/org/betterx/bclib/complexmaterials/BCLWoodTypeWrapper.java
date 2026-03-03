@@ -168,7 +168,9 @@ public final class BCLWoodTypeWrapper {
                 boolean matched = true;
                 for (int i = 0; i < params.length; i++) {
                     if (params[i] == String.class) {
-                        args[i] = id.getPath();
+                        // Keep namespace in WoodType name so sign and hanging sign textures resolve
+                        // to the mod namespace instead of falling back to minecraft.
+                        args[i] = id.toString();
                     } else if (params[i] == ResourceLocation.class) {
                         args[i] = id;
                     } else if (params[i] == BlockSetType.class) {
@@ -220,7 +222,7 @@ public final class BCLWoodTypeWrapper {
             Object entryValue = entry.getValue();
             if (!(entryValue instanceof WoodType type)) continue;
             if (key instanceof ResourceLocation rl && rl.getPath().equals(id.getPath())) return type;
-            if (key instanceof String name && name.equals(id.getPath())) return type;
+            if (key instanceof String name && (name.equals(id.getPath()) || name.equals(id.toString()))) return type;
         }
         return null;
     }

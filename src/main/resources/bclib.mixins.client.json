@@ -12,6 +12,7 @@
     "ClientRecipeBookMixin",
     "DebugRendererMixin",
     "FogRendererMixin",
+    "RenderSystemMixin",
     "LevelRendererAccessor",
     "LevelRendererMixin",
     "ModelManagerMixin",
