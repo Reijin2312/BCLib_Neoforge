@@ -1,4 +1,8 @@
 {
+  "message.bclib.datafixer.backup_failed": "BCLib 无法创建自动备份。更安全的做法是返回并在应用修复前手动备份此世界。",
+  "title.bclib.datafixer.backup_failed": "备份失败",
+  "title.bclib.datafixer.backup_failed.back": "返回（手动备份）",
+  "title.bclib.datafixer.backup_failed.continue": "自行承担风险并继续",
   "message.bclib.anvil_damage": "§c损坏",
   "bclib.datafixer.backupWarning.title": "发现了一个不兼容的世界",
   "bclib.datafixer.backupWarning.message": "自从上次加载这个世界以来，一些安装的MOD的内部结构确实发生了变化。\n\n我们可以自动为您更改世界。如果继续而不应用更改，则世界可能无法正确加载，在着之前，您应该创建一个备份.",

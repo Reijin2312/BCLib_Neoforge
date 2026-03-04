@@ -1,5 +1,6 @@
 package org.betterx.bclib.client.render;
 
+import org.betterx.bclib.BCLib;
 import org.betterx.bclib.config.Configs;
 import org.betterx.bclib.util.BackgroundInfo;
 import org.betterx.bclib.util.MHelper;
@@ -28,6 +29,11 @@ public class CustomFogRenderer {
     private static float fogEnd = 192;
 
     public static boolean applyFogDensity(Camera camera, float viewDistance, boolean thickFog) {
+        if (BCLib.RUNS_DISTANT_HORIZONS) {
+            // DH handles fog blending for LOD/world transitions.
+            return false;
+        }
+
         if (!Configs.CLIENT_CONFIG.renderCustomFog()) {
             return false;
         }

@@ -1,4 +1,8 @@
 {
+  "message.bclib.datafixer.backup_failed": "BCLib otomatik bir yedek oluşturamadı. Düzeltmeleri uygulamadan önce geri dönüp bu dünyanın manuel bir yedeğini oluşturmanız daha güvenlidir.",
+  "title.bclib.datafixer.backup_failed": "Yedekleme başarısız",
+  "title.bclib.datafixer.backup_failed.back": "Geri dön (manuel yedek)",
+  "title.bclib.datafixer.backup_failed.continue": "Sorumluluğu kabul et ve devam et",
   "__comment__": "@alpeerkaraca - BCLib Turkish Language File",
   "message.bclib.anvil_damage": "§cHasar",
   "bclib.datafixer.backupWarning.title": "Dünyayla Uyumsuz Bir Gardiyan Bulundu",

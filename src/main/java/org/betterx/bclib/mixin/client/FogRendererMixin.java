@@ -1,5 +1,6 @@
 package org.betterx.bclib.mixin.client;
 
+import org.betterx.bclib.BCLib;
 import org.betterx.bclib.client.render.CustomFogRenderer;
 import org.betterx.bclib.util.BackgroundInfo;
 
@@ -39,6 +40,13 @@ public class FogRendererMixin {
             float f,
             CallbackInfo info
     ) {
+        if (BCLib.RUNS_DISTANT_HORIZONS) {
+            BackgroundInfo.fogColorRed = fogRed;
+            BackgroundInfo.fogColorGreen = fogGreen;
+            BackgroundInfo.fogColorBlue = fogBlue;
+            return;
+        }
+
         FogType fogType = camera.getFluidInCamera();
         if (fogType != FogType.WATER && world.dimension().equals(Level.END)) {
             Entity entity = camera.getEntity();
@@ -68,6 +76,10 @@ public class FogRendererMixin {
             float g,
             CallbackInfo ci
     ) {
+        if (BCLib.RUNS_DISTANT_HORIZONS) {
+            return;
+        }
+
         if (CustomFogRenderer.applyFogDensity(camera, viewDistance, thickFog)) {
             RenderSystem.setShaderFogShape(
                     fogMode == FogRenderer.FogMode.FOG_SKY ? FogShape.CYLINDER : FogShape.SPHERE

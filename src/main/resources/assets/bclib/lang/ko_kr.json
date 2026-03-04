@@ -1,4 +1,8 @@
 {
+  "message.bclib.datafixer.backup_failed": "BCLib이 자동 백업을 만들지 못했습니다. 수정을 적용하기 전에 뒤로 돌아가 이 월드를 수동으로 백업하는 것이 더 안전합니다.",
+  "title.bclib.datafixer.backup_failed": "백업 실패",
+  "title.bclib.datafixer.backup_failed.back": "뒤로 가기(수동 백업)",
+  "title.bclib.datafixer.backup_failed.continue": "위험을 감수하고 계속",
   "message.bclib.anvil_damage": "§c위험",
   "bclib.datafixer.backupWarning.title": "가디언에서 호환되지 않는 월드를 감지",
   "bclib.datafixer.backupWarning.message": "가디언에서 감지한 바에 따르면 설치된 모드들의 내부가 이 월드가 마지막으로 게임한 이후로 바뀌었습니다.\n\n우리는 당신을 위해 자동으로 월드를 바꿀 수 있습니다. 변경 내용을 적용하지 않고 계속하면 월드 로드가 올바르게 수행되지 않을 수 있습니다. 계속하기 전에 백업을 만들어야 합니다.",

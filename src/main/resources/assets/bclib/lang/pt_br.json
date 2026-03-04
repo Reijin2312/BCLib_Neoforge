@@ -1,4 +1,8 @@
 {
+    "message.bclib.datafixer.backup_failed": "BCLib não conseguiu criar um backup automático. É mais seguro voltar e criar um backup manual deste mundo antes de aplicar as correções.",
+    "title.bclib.datafixer.backup_failed": "Falha ao criar backup",
+    "title.bclib.datafixer.backup_failed.back": "Voltar (backup manual)",
+    "title.bclib.datafixer.backup_failed.continue": "Continuar por sua conta e risco",
     "message.bclib.anvil_damage": "§cDano",
     "bclib.datafixer.backupWarning.title": "Guardian detectou um mundo incompatível",
     "bclib.datafixer.backupWarning.message": "O Guardian detectou, que os internos alguns mods instalados mudaram desde que este mundo foi jogado pela última vez.\n\nPodemos mudar automaticamente o mundo para você.Se você continuar sem aplicar as alterações, o mundo pode não carregar correto.Antes de continuar, você deve criar um backup.",

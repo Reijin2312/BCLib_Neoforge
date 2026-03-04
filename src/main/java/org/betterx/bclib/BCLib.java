@@ -35,6 +35,7 @@ public class BCLib {
     public static final Logger LOGGER = C.LOG;
 
     public static final boolean RUNS_NULLSCAPE = ModList.get().isLoaded("nullscape");
+    public static final boolean RUNS_DISTANT_HORIZONS = ModList.get().isLoaded("distanthorizons");
 
     public BCLib(IEventBus modBus) {
         initialize(modBus);

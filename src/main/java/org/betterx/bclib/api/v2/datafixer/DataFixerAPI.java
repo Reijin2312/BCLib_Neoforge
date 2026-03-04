@@ -2,6 +2,7 @@ package org.betterx.bclib.api.v2.datafixer;
 
 import org.betterx.bclib.BCLib;
 import org.betterx.bclib.client.gui.screens.AtomicProgressListener;
+import org.betterx.bclib.client.gui.screens.BackupFailedScreen;
 import org.betterx.bclib.client.gui.screens.ConfirmFixScreen;
 import org.betterx.bclib.client.gui.screens.LevelFixErrorScreen;
 import org.betterx.bclib.client.gui.screens.LevelFixErrorScreen.Listener;
@@ -33,6 +34,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -48,6 +50,7 @@ public class DataFixerAPI {
 
     static class State {
         public boolean didFail = false;
+        public boolean backupFailed = false;
         protected ArrayList<String> errors = new ArrayList<>();
 
         public void addError(String s) {
@@ -159,21 +162,25 @@ public class DataFixerAPI {
         return ps;
     }
 
-    private static void makeBackupAndShowToast(LevelStorageSource storageSource, String levelID) {
+    private static boolean makeBackupAndShowToast(LevelStorageSource storageSource, String levelID) {
         boolean didOpen = false;
         try (LevelStorageSource.LevelStorageAccess access = storageSource.createAccess(levelID);) {
             didOpen = true;
             EditWorldScreen.makeBackupAndShowToast(access);
+            return true;
         } catch (IOException ex) {
             if (!didOpen) {
                 SystemToast.onWorldAccessFailure(Minecraft.getInstance(), levelID);
             }
             LOGGER.warn("Failed to create backup of level {}", levelID, ex);
+            return false;
         }
     }
 
     private static boolean fixData(File dir, String levelID, boolean showUI, Consumer<Boolean> onResume) {
         MigrationProfile profile = loadProfileIfNeeded(dir);
+
+        AtomicReference<BiConsumer<Boolean, Boolean>> runFixesRef = new AtomicReference<>();
 
         BiConsumer<Boolean, Boolean> runFixes = (createBackup, applyFixes) -> {
             final AtomicProgressListener progress;
@@ -212,9 +219,19 @@ public class DataFixerAPI {
             }
 
             Supplier<State> runner = () -> {
+                boolean backupCreated = true;
                 if (createBackup) {
-                    progress.progressStage(Component.translatable("message.bclib.datafixer.progress.waitbackup"));
-                    makeBackupAndShowToast(Minecraft.getInstance().getLevelSource(), levelID);
+                    if (progress != null) {
+                        progress.progressStage(Component.translatable("message.bclib.datafixer.progress.waitbackup"));
+                    }
+                    backupCreated = makeBackupAndShowToast(Minecraft.getInstance().getLevelSource(), levelID);
+                }
+
+                if (applyFixes && !backupCreated) {
+                    State state = new State();
+                    state.backupFailed = true;
+                    state.addError("Failed creating backup");
+                    return state;
                 }
 
                 if (applyFixes) {
@@ -231,6 +248,14 @@ public class DataFixerAPI {
                     Minecraft.getInstance()
                              .execute(() -> {
                                  if (profile != null && showUI) {
+                                     if (state.backupFailed) {
+                                         showBackupFailedScreen(
+                                                 () -> Minecraft.getInstance().setScreen(null),
+                                                 () -> runFixesRef.get().accept(false, applyFixes)
+                                         );
+                                         return;
+                                     }
+
                                      //something went wrong, show the user our error
                                      if (state.didFail || state.hasError()) {
                                          showLevelFixErrorScreen(state, (markFixed) -> {
@@ -255,6 +280,7 @@ public class DataFixerAPI {
                 }
             }
         };
+        runFixesRef.set(runFixes);
 
         //we have some migrations
         if (profile != null) {
@@ -278,6 +304,11 @@ public class DataFixerAPI {
                          state.getErrorMessages(),
                          onContinue
                  ));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void showBackupFailedScreen(Runnable onBack, Runnable onContinue) {
+        Minecraft.getInstance().setScreen(new BackupFailedScreen(null, onBack, onContinue));
     }
 
     private static MigrationProfile loadProfileIfNeeded(File levelBaseDir) {
