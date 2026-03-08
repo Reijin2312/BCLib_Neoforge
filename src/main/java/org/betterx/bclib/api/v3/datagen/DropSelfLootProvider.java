@@ -5,8 +5,9 @@ import org.betterx.wover.loot.api.BlockLootProvider;
 import org.betterx.wover.loot.api.LootLookupProvider;
 
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -18,10 +19,14 @@ import org.jetbrains.annotations.NotNull;
 public interface DropSelfLootProvider<B extends ItemLike> extends BlockLootProvider {
     @Override
     default LootTable.Builder registerBlockLoot(
-            @NotNull ResourceLocation location,
+            @NotNull Identifier location,
             @NotNull LootLookupProvider provider,
             @NotNull ResourceKey<LootTable> tableKey
     ) {
+        if (((ItemLike) this).asItem() == Items.AIR) {
+            return LootTable.lootTable();
+        }
+
         LootTable.Builder builder = LootTable.lootTable();
         var pool = LootPool.lootPool()
                            .setRolls(ConstantValue.exactly(1.0f))

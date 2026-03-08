@@ -19,7 +19,7 @@ import org.betterx.wover.datagen.api.WoverDataGenEntryPoint;
 import org.betterx.wover.state.api.WorldConfig;
 import org.betterx.wover.ui.api.VersionChecker;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -78,7 +78,7 @@ public class BCLib {
     }
 
     public static boolean isDevEnvironment() {
-        return !FMLEnvironment.production;
+        return !FMLEnvironment.isProduction();
     }
 
     public static boolean isDatagen() {
@@ -86,13 +86,11 @@ public class BCLib {
     }
 
     public static boolean isClient() {
-        return FMLEnvironment.dist == Dist.CLIENT;
+        return FMLEnvironment.getDist() == Dist.CLIENT;
     }
 
-    public static ResourceLocation makeID(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    public static Identifier makeID(String path) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
 }
-
-

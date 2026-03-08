@@ -56,7 +56,13 @@ public class BlockEntry extends ComplexMaterialEntry {
 
     public Block init(ComplexMaterial material, BlockBehaviour.Properties blockSettings, BlockRegistry registry) {
         String location = getName(material.getBaseName());
-        Block block = initFunction.apply(material, blockSettings);
+        registry.prepareConstructionPath(location);
+        Block block;
+        try {
+            block = initFunction.apply(material, blockSettings);
+        } finally {
+            registry.finishConstructionPath();
+        }
         if (block == null) return null;
 
         if (!isPseudoEntry) {

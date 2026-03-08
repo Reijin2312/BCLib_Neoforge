@@ -12,35 +12,32 @@ import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.PressurePlateBlock;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BasePressurePlateBlock extends PressurePlateBlock implements BlockModelProvider, BlockTagProvider, DropSelfLootProvider<BasePressurePlateBlock> {
     private final Block parent;
 
     protected BasePressurePlateBlock(Block source, BlockSetType type) {
         super(
-                type, Properties.ofFullCopy(source).noCollission().noOcclusion().strength(0.5F)
+                type, Properties.ofFullCopy(source).noCollision().noOcclusion().strength(0.5F)
         );
         this.parent = source;
     }
 
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         generator.createPressurePlate(parent, this);
     }
 
     @Override
-    public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+    public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
         context.add(BlockTags.PRESSURE_PLATES, this);
     }
 
@@ -50,12 +47,12 @@ public abstract class BasePressurePlateBlock extends PressurePlateBlock implemen
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(this, BlockTags.PRESSURE_PLATES, BlockTags.WOODEN_PRESSURE_PLATES);
         }
 
         @Override
-        public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+        public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
             context.add(this, ItemTags.WOODEN_PRESSURE_PLATES);
         }
     }
@@ -78,4 +75,3 @@ public abstract class BasePressurePlateBlock extends PressurePlateBlock implemen
         );
     }
 }
-

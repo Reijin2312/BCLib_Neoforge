@@ -9,7 +9,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
-@EventBusSubscriber(modid = org.betterx.bclib.BCLib.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.DEDICATED_SERVER)
+@EventBusSubscriber(modid = org.betterx.bclib.BCLib.MOD_ID, value = Dist.DEDICATED_SERVER)
 public class BCLibServer {
     @SubscribeEvent
     public static void onDedicatedServerSetup(FMLDedicatedServerSetupEvent event) {

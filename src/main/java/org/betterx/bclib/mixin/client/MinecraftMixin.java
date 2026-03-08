@@ -4,7 +4,6 @@ import org.betterx.bclib.interfaces.CustomColorProvider;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,11 +23,6 @@ public abstract class MinecraftMixin {
     @Shadow
     private BlockColors blockColors;
 
-    @Final
-    @Shadow
-    private ItemColors itemColors;
-
-
     @Shadow
     @Nullable
     public Screen screen;
@@ -42,14 +36,7 @@ public abstract class MinecraftMixin {
                                                                   .getColor(state, level, pos, tintIndex),
                         block
                 );
-                itemColors.register(
-                        (stack, tintIndex) -> provider.getItemProvider().getColor(stack, tintIndex),
-                        block.asItem()
-                );
             }
         });
     }
 }
-
-
-

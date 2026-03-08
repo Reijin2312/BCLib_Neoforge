@@ -7,17 +7,15 @@ import org.betterx.bclib.client.models.PatternsHelper;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WeightedPressurePlateBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +29,7 @@ public class BaseWeightedPlateBlock extends WeightedPressurePlateBlock implement
                 15,
                 type,
                 Properties.ofFullCopy(source)
-                          .noCollission()
+                          .noCollision()
                           .noOcclusion()
                           .requiresCorrectToolForDrops()
                           .strength(0.5F)
@@ -40,15 +38,13 @@ public class BaseWeightedPlateBlock extends WeightedPressurePlateBlock implement
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation resourceLocation) {
+    public BlockModel getItemModel(Identifier resourceLocation) {
         return getBlockModel(resourceLocation, defaultBlockState());
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public @Nullable BlockModel getBlockModel(ResourceLocation resourceLocation, BlockState blockState) {
-        ResourceLocation parentId = BuiltInRegistries.BLOCK.getKey(parent);
+    public @Nullable BlockModel getBlockModel(Identifier resourceLocation, BlockState blockState) {
+        Identifier parentId = BuiltInRegistries.BLOCK.getKey(parent);
         Optional<String> pattern;
         if (blockState.getValue(POWER) > 0) {
             pattern = PatternsHelper.createJson(BasePatterns.BLOCK_PLATE_DOWN, parentId);
@@ -59,16 +55,14 @@ public class BaseWeightedPlateBlock extends WeightedPressurePlateBlock implement
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public UnbakedModel getModelVariant(
-            ModelResourceLocation stateId,
+    public BlockStateModel.UnbakedRoot getModelVariant(
+            Identifier stateId,
             BlockState blockState,
-            Map<ResourceLocation, UnbakedModel> modelCache
+            Map<Identifier, UnbakedModel> modelCache
     ) {
         String state = blockState.getValue(POWER) > 0 ? "_down" : "_up";
-        ModelResourceLocation modelId = RuntimeBlockModelProvider.remapModelResourceLocation(stateId, blockState, state);
+        Identifier modelId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, state);
         registerBlockModel(stateId, modelId, blockState, modelCache);
-        return ModelsHelper.createBlockSimple(modelId.id());
+        return ModelsHelper.createBlockSimple(modelId);
     }
 }
-

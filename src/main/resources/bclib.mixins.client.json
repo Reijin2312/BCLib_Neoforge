@@ -7,14 +7,14 @@
     "AnvilScreenMixin",
     "AtlasSetMixin",
     "BlockMixin",
+    "ClientHooksMixin",
     "ClientLevelMixin",
     "ClientPacketListenerMixin",
     "ClientRecipeBookMixin",
-    "DebugRendererMixin",
-    "FogRendererMixin",
-    "LevelRendererAccessor",
-    "LevelRendererMixin",
+    "RenderSystemMixin",
     "ModelManagerMixin",
+    "boat.AbstractBoatRendererMixin",
+    "boat.BoatRenderStateMixin",
     "boat.BoatRendererMixin"
   ],
   "injectors": {

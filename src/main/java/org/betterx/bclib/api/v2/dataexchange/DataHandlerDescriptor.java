@@ -4,11 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import net.minecraft.server.level.ServerPlayer;
 
-import org.betterx.bclib.api.v2.dataexchange.PacketSender;
 import org.betterx.bclib.api.v2.dataexchange.handler.DataExchange;
 
 import java.util.Objects;
@@ -42,7 +41,7 @@ public class DataHandlerDescriptor<T extends DataHandlerDescriptor.PacketPayload
 
     public DataHandlerDescriptor(
             @NotNull Direction direction,
-            @NotNull ResourceLocation identifier,
+            @NotNull Identifier identifier,
             @NotNull PayloadFactory<T> factory,
             @NotNull Supplier<BaseDataHandler<T>> instancer
     ) {
@@ -51,7 +50,7 @@ public class DataHandlerDescriptor<T extends DataHandlerDescriptor.PacketPayload
 
     public DataHandlerDescriptor(
             @NotNull Direction direction,
-            @NotNull ResourceLocation identifier,
+            @NotNull Identifier identifier,
             @NotNull PayloadFactory<T> factory,
             @NotNull Supplier<BaseDataHandler<T>> instancer,
             boolean sendOnJoin,
@@ -62,7 +61,7 @@ public class DataHandlerDescriptor<T extends DataHandlerDescriptor.PacketPayload
 
     public DataHandlerDescriptor(
             @NotNull Direction direction,
-            @NotNull ResourceLocation identifier,
+            @NotNull Identifier identifier,
             @NotNull PayloadFactory<T> factory,
             @NotNull Supplier<BaseDataHandler<T>> receiv_instancer,
             @NotNull Supplier<BaseDataHandler<T>> join_instancer,
@@ -103,7 +102,7 @@ public class DataHandlerDescriptor<T extends DataHandlerDescriptor.PacketPayload
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o instanceof ResourceLocation) {
+        if (o instanceof Identifier) {
             return o.equals(IDENTIFIER);
         }
         if (!(o instanceof DataHandlerDescriptor that)) return false;
@@ -138,7 +137,7 @@ public class DataHandlerDescriptor<T extends DataHandlerDescriptor.PacketPayload
         BaseDataHandler<T> h = this.INSTANCE.get();
         //noinspection unchecked
         h.receiveFromClient(
-                player.server,
+                player.level().getServer(),
                 player,
                 player.connection,
                 (T) payload,

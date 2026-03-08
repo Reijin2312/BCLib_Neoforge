@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(value = BoatItem.class)
 public class BoatItemMixin {
-    @ModifyArg(
+    @ModifyArg(remap = false,
             method = "use",
             at = @At(
                     value = "INVOKE",
@@ -27,6 +27,3 @@ public class BoatItemMixin {
         return boat;
     }
 }
-
-
-

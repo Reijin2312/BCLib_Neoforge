@@ -16,7 +16,7 @@ public class BehaviourBuilders {
     }
 
     public static BlockBehaviour.Properties createPlant(MapColor color) {
-        return createWalkablePlant(color).noCollission();
+        return createWalkablePlant(color).noCollision();
     }
 
     public static BlockBehaviour.Properties createWalkablePlant() {
@@ -44,7 +44,7 @@ public class BehaviourBuilders {
     public static BlockBehaviour.Properties createStaticVine(MapColor color) {
         return createPlant(color)
                 .replaceable()
-                .noCollission()
+                .noCollision()
                 .strength(0.2f)
                 .sound(SoundType.VINE);
     }
@@ -56,7 +56,7 @@ public class BehaviourBuilders {
 
     public static BlockBehaviour.Properties createGrass(MapColor color) {
         return createPlant(color)
-                .noCollission()
+                .noCollision()
                 .noOcclusion()
                 .offsetType(BlockBehaviour.OffsetType.XZ)
                 .sound(SoundType.GRASS);
@@ -64,7 +64,7 @@ public class BehaviourBuilders {
 
     public static BlockBehaviour.Properties createSeed(MapColor color) {
         return createPlant(color)
-                .noCollission()
+                .noCollision()
                 .randomTicks()
                 .sound(SoundType.HARD_CROP)
                 .offsetType(BlockBehaviour.OffsetType.XZ);
@@ -72,7 +72,7 @@ public class BehaviourBuilders {
 
     public static BlockBehaviour.Properties createPlantCover(MapColor color) {
         return createPlant(color).forceSolidOn()
-                                 .noCollission()
+                                 .noCollision()
                                  .replaceable()
                                  .strength(0.2f)
                                  .sound(SoundType.GLOW_LICHEN);
@@ -87,7 +87,7 @@ public class BehaviourBuilders {
                                         .mapColor(color)
                                         .instabreak()
                                         .noOcclusion()
-                                        .noCollission()
+                                        .noCollision()
                                         .sound(SoundType.WET_GRASS)
                                         .offsetType(BlockBehaviour.OffsetType.XZ)
                                         .pushReaction(PushReaction.DESTROY);
@@ -191,7 +191,7 @@ public class BehaviourBuilders {
                 .mapColor(color)
                 .forceSolidOn()
                 .instrument(NoteBlockInstrument.BASS)
-                .noCollission()
+                .noCollision()
                 .strength(1.0f);
         if (flammable) {
             p.ignitedByLava();
@@ -200,7 +200,7 @@ public class BehaviourBuilders {
     }
 
     public static BlockBehaviour.Properties createWallSign(MapColor color, Block dropBlock, boolean flammable) {
-        return createSign(color, flammable).dropsLike(dropBlock);
+        return createSign(color, flammable).overrideLootTable(dropBlock.getLootTable());
     }
 
     public static BlockBehaviour.Properties createTrapDoor(MapColor color, boolean flammable) {

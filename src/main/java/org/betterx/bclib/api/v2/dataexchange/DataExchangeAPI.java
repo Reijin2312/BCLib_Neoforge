@@ -11,7 +11,6 @@ public class DataExchangeAPI extends DataExchange {
     }
 
     @Override
-    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     protected Connector clientSupplier(DataExchange api) {
         try {
             Class<?> clazz = Class.forName("org.betterx.bclib.api.v2.dataexchange.ConnectorClientside");
@@ -26,4 +25,3 @@ public class DataExchangeAPI extends DataExchange {
         return new ConnectorServerside(api);
     }
 }
-

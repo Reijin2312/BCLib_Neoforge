@@ -1,84 +1,102 @@
 package org.betterx.bclib.client.render;
 
 import org.betterx.bclib.items.boat.BoatTypeOverride;
-import org.betterx.bclib.items.boat.CustomBoatTypeOverride;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.ListModel;
-import net.minecraft.client.model.WaterPatchModel;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.Model;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.BoatRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.entity.vehicle.ChestBoat;
+import net.minecraft.util.Unit;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import org.joml.Quaternionf;
+import org.jetbrains.annotations.Nullable;
 
-@OnlyIn(Dist.CLIENT)
 public class BoatRenderer {
+    private static @Nullable Model.Simple waterPatchModel;
 
-    public static boolean render(
-            Boat boat,
-            float f,
-            float g,
-            PoseStack poseStack,
-            MultiBufferSource multiBufferSource,
-            int i
-    ) {
-        if (boat instanceof CustomBoatTypeOverride cbto) {
-            BoatTypeOverride type = cbto.bcl_getCustomType();
-            if (type != null) {
-                boolean hasChest = boat instanceof ChestBoat;
-                float k;
-                poseStack.pushPose();
-                poseStack.translate(0.0, 0.375, 0.0);
-                poseStack.mulPose(Axis.YP.rotationDegrees(180.0f - f));
-                float h = (float) boat.getHurtTime() - g;
-                float j = boat.getDamage() - g;
-                if (j < 0.0f) {
-                    j = 0.0f;
-                }
-                if (h > 0.0f) {
-                    poseStack.mulPose(Axis.XP.rotationDegrees(Mth.sin(h) * h * j / 10.0f * (float) boat.getHurtDir()));
-                }
-                if (!Mth.equal(k = boat.getBubbleAngle(g), 0.0f)) {
-                    poseStack.mulPose(new Quaternionf().setAngleAxis(
-                            boat.getBubbleAngle(g) * ((float) Math.PI / 180),
-                            1.0f, 0.0f, 1.0f
-                    ));
-                }
-                ResourceLocation resourceLocation = hasChest ? type.chestBoatTexture : type.boatTexture;
-                ListModel<Boat> boatModel = type.getBoatModel(hasChest);
-                poseStack.scale(-1.0f, -1.0f, 1.0f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(90.0f));
-                boatModel.setupAnim(boat, g, 0.0f, -0.1f, 0.0f, 0.0f);
-                VertexConsumer vertexConsumer = multiBufferSource.getBuffer(boatModel.renderType(resourceLocation));
-                boatModel.renderToBuffer(
-                        poseStack, vertexConsumer, i,
-                        OverlayTexture.NO_OVERLAY
-                );
-                if (!boat.isUnderWater()) {
-                    VertexConsumer vertexConsumer2 = multiBufferSource.getBuffer(RenderType.waterMask());
-                    if (boatModel instanceof WaterPatchModel waterPatchModel) {
-                        waterPatchModel.waterPatch().render(poseStack, vertexConsumer2, i, OverlayTexture.NO_OVERLAY);
-                    }
-                }
-                poseStack.popPose();
-
-                return true;
-            }
-
+    public static void initialize(EntityRendererProvider.Context context) {
+        if (waterPatchModel == null) {
+            waterPatchModel = new Model.Simple(context.bakeLayer(ModelLayers.BOAT_WATER_PATCH), p -> RenderTypes.waterMask());
         }
-        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static boolean submitCustom(
+            BoatRenderState state,
+            PoseStack poseStack,
+            SubmitNodeCollector submitNodeCollector
+    ) {
+        if (!(state instanceof CustomBoatRenderState ext)) {
+            return false;
+        }
+
+        BoatTypeOverride type = ext.bclib_getCustomType();
+        if (type == null) {
+            return false;
+        }
+
+        boolean hasChest = ext.bclib_isChest();
+        Object modelObj = type.getBoatModel(hasChest);
+        if (!(modelObj instanceof EntityModel<?> rawModel)) {
+            return false;
+        }
+
+        EntityModel<BoatRenderState> model = (EntityModel<BoatRenderState>) rawModel;
+        Identifier texture = hasChest ? type.chestBoatTexture : type.boatTexture;
+        if (texture == null) {
+            return false;
+        }
+
+        poseStack.pushPose();
+        poseStack.translate(0.0F, 0.375F, 0.0F);
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - state.yRot));
+
+        float hurtTime = state.hurtTime;
+        if (hurtTime > 0.0F) {
+            poseStack.mulPose(Axis.XP.rotationDegrees(Mth.sin(hurtTime) * hurtTime * state.damageTime / 10.0F * state.hurtDir));
+        }
+
+        if (!state.isUnderWater && !Mth.equal(state.bubbleAngle, 0.0F)) {
+            poseStack.mulPose(new Quaternionf().setAngleAxis(state.bubbleAngle * (float) (Math.PI / 180.0), 1.0F, 0.0F, 1.0F));
+        }
+
+        poseStack.scale(-1.0F, -1.0F, 1.0F);
+        poseStack.mulPose(Axis.YP.rotationDegrees(90.0F));
+
+        submitNodeCollector.submitModel(
+                model,
+                state,
+                poseStack,
+                model.renderType(texture),
+                state.lightCoords,
+                OverlayTexture.NO_OVERLAY,
+                state.outlineColor,
+                null
+        );
+
+        if (!state.isUnderWater && waterPatchModel != null) {
+            submitNodeCollector.submitModel(
+                    waterPatchModel,
+                    Unit.INSTANCE,
+                    poseStack,
+                    waterPatchModel.renderType(texture),
+                    state.lightCoords,
+                    OverlayTexture.NO_OVERLAY,
+                    state.outlineColor,
+                    null
+            );
+        }
+
+        poseStack.popPose();
+        return true;
     }
 }
-
-
-

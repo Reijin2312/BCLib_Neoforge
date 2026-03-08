@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * NeoForge fuel registry helper.
  */
-@EventBusSubscriber(modid = BCLib.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = BCLib.MOD_ID)
 public final class FuelRegistry {
     public static final FuelRegistry INSTANCE = new FuelRegistry();
 

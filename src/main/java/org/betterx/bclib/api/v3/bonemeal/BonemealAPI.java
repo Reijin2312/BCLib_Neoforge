@@ -141,7 +141,7 @@ public class BonemealAPI {
                 .blockSpreaderForState(level, blockPos, blockState);
 
         if (spreader != null) {
-            if (spreader.isValidBonemealSpreadTarget(level, blockPos, blockState, level.isClientSide)) {
+            if (spreader.isValidBonemealSpreadTarget(level, blockPos, blockState, level.isClientSide())) {
                 if (level instanceof ServerLevel) {
                     if (spreader.performBonemealSpread((ServerLevel) level, level.random, blockPos, blockState)) {
                         itemStack.shrink(1);

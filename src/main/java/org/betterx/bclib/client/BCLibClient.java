@@ -19,7 +19,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
-@EventBusSubscriber(modid = BCLib.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = BCLib.MOD_ID, value = Dist.CLIENT)
 public class BCLibClient {
     private static CustomModelBakery modelBakery;
 
@@ -39,8 +39,8 @@ public class BCLibClient {
         PostInitAPI.postInit(true);
         ModMenuEntryPoint.register();
 
-        AtlasSetManager.addSource(AtlasSetManager.VANILLA_BLOCKS, new SpriteLister("entity/chest"));
-        AtlasSetManager.addSource(AtlasSetManager.VANILLA_BLOCKS, new SpriteLister("blocks"));
+        AtlasSetManager.addSource(AtlasSetManager.VANILLA_BLOCKS, SpriteLister.of("entity/chest"));
+        AtlasSetManager.addSource(AtlasSetManager.VANILLA_BLOCKS, SpriteLister.of("blocks"));
     }
 
     @SubscribeEvent
@@ -50,18 +50,6 @@ public class BCLibClient {
                 event.register(
                         (state, level, pos, tintIndex) -> provider.getProvider()
                                                                   .getColor(state, level, pos, tintIndex),
-                        block
-                );
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
-        for (Block block : BuiltInRegistries.BLOCK) {
-            if (block instanceof CustomColorProvider provider) {
-                event.register(
-                        (stack, tintIndex) -> provider.getItemProvider().getColor(stack, tintIndex),
                         block
                 );
             }

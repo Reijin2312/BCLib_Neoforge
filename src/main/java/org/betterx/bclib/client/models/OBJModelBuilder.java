@@ -1,22 +1,19 @@
 package org.betterx.bclib.client.models;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import com.google.common.collect.Lists;
 import org.joml.Vector3f;
 
 import java.util.List;
 
-@OnlyIn(Dist.CLIENT)
 public class OBJModelBuilder {
     private static final OBJModelBuilder INSTANCE = new OBJModelBuilder();
-    private final List<ResourceLocation> textures = Lists.newArrayList();
+    private final List<Identifier> textures = Lists.newArrayList();
     private final Vector3f offset = new Vector3f();
-    private ResourceLocation modelLocation;
-    private ResourceLocation particles;
+    private Identifier modelLocation;
+    private Identifier particles;
     private boolean useCulling;
     private boolean useShading;
 
@@ -28,7 +25,7 @@ public class OBJModelBuilder {
      *
      * @return {@link OBJModelBuilder} instance.
      */
-    public static OBJModelBuilder start(ResourceLocation modelLocation) {
+    public static OBJModelBuilder start(Identifier modelLocation) {
         INSTANCE.modelLocation = modelLocation;
         INSTANCE.offset.set(0, 0, 0);
         INSTANCE.useCulling = true;
@@ -41,10 +38,10 @@ public class OBJModelBuilder {
     /**
      * Add texture to the model. All textures have indexes with same order as in source OBJ model.
      *
-     * @param texture {@link ResourceLocation} texture ID.
+     * @param texture {@link Identifier} texture ID.
      * @return this {@link OBJModelBuilder}.
      */
-    public OBJModelBuilder addTexture(ResourceLocation texture) {
+    public OBJModelBuilder addTexture(Identifier texture) {
         textures.add(texture);
         return this;
     }
@@ -79,10 +76,10 @@ public class OBJModelBuilder {
      * Set particle texture for this model.
      * Not required, if texture is not selected the first texture will be used instead of it.
      *
-     * @param texture {@link ResourceLocation} texture ID.
+     * @param texture {@link Identifier} texture ID.
      * @return this {@link OBJModelBuilder}.
      */
-    public OBJModelBuilder setParticlesTexture(ResourceLocation texture) {
+    public OBJModelBuilder setParticlesTexture(Identifier texture) {
         this.particles = texture;
         return this;
     }
@@ -106,8 +103,7 @@ public class OBJModelBuilder {
                 textures.add(particles);
             }
         }
-        ResourceLocation[] sprites = textures.toArray(new ResourceLocation[textures.size()]);
+        Identifier[] sprites = textures.toArray(new Identifier[textures.size()]);
         return new OBJBlockModel(modelLocation, offset, useCulling, useShading, particleIndex, sprites);
     }
 }
-

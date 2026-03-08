@@ -18,13 +18,11 @@ public abstract class PumpkinBlockMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"
-            )
+            ),
+            remap = false
     )
     private boolean bclib_isShears(ItemStack stack, ItemAbility ability, Operation<Boolean> original) {
         // Fall back to vanilla/NeoForge check first to preserve behaviour, then allow BCLib shears.
         return original.call(stack, ability) || BaseShearsItem.isShear(stack);
     }
 }
-
-
-

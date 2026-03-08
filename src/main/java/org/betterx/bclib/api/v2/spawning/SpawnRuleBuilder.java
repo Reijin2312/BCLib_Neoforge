@@ -23,7 +23,7 @@ import com.google.common.collect.Maps;
 import java.util.*;
 import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = BCLib.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = BCLib.MOD_ID)
 public class SpawnRuleBuilder<M extends Mob> {
     private static final Map<String, SpawnRuleEntry> RULES_CACHE = Maps.newHashMap();
     private static final SpawnRuleBuilder INSTANCE = new SpawnRuleBuilder();
@@ -100,7 +100,7 @@ public class SpawnRuleBuilder<M extends Mob> {
     public SpawnRuleBuilder aboveGround(int minHeight) {
         entryInstance = getFromCache("above_ground", () -> {
             return new SpawnRuleEntry(0, (type, world, spawnReason, pos, random) -> {
-                if (pos.getY() < world.getMinBuildHeight() + 2) {
+                if (pos.getY() < world.getMinY() + 2) {
                     return false;
                 }
                 return BlocksHelper.findSurfaceBelow(

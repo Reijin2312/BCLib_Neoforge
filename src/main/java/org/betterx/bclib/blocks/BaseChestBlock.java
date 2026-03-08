@@ -17,10 +17,11 @@ import org.betterx.wover.tag.api.predefined.CommonItemTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.models.model.TextureMapping;
-import net.minecraft.data.models.model.TextureSlot;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
@@ -31,6 +32,7 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
@@ -41,7 +43,7 @@ public abstract class BaseChestBlock extends ChestBlock implements BlockModelPro
     private final Block parent;
 
     protected BaseChestBlock(Block source) {
-        super(Properties.ofFullCopy(source).noOcclusion(), () -> BaseBlockEntities.CHEST);
+        super(() -> BaseBlockEntities.CHEST, SoundEvents.CHEST_OPEN, SoundEvents.CHEST_CLOSE, Properties.ofFullCopy(source).noOcclusion());
         this.parent = source;
     }
 
@@ -59,22 +61,23 @@ public abstract class BaseChestBlock extends ChestBlock implements BlockModelPro
                 BCLModels.CHEST_ITEM,
                 new TextureMapping()
                         .put(TextureSlot.TEXTURE, BuiltInRegistries.BLOCK.getKey(this).withPrefix("block/chest/"))
+                        .put(TextureSlot.PARTICLE, BuiltInRegistries.BLOCK.getKey(this).withPrefix("block/chest/"))
         );
     }
 
     @Override
-    public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+    public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
         context.add(this, CommonBlockTags.CHEST);
     }
 
     @Override
-    public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+    public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
         context.add(this, CommonItemTags.CHEST);
     }
 
     @Override
     public LootTable.Builder registerBlockLoot(
-            @NotNull ResourceLocation location,
+            @NotNull Identifier location,
             @NotNull LootLookupProvider provider,
             @NotNull ResourceKey<LootTable> tableKey
     ) {
@@ -82,13 +85,13 @@ public abstract class BaseChestBlock extends ChestBlock implements BlockModelPro
         var pool = LootPool.lootPool()
                            .setRolls(ConstantValue.exactly(1.0f))
                            .add(LootItem.lootTableItem(this).apply(CopyComponentsFunction
-                                   .copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                   .copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
                                    .include(DataComponents.CUSTOM_NAME)
                                    .include(DataComponents.CONTAINER)
                                    .include(DataComponents.LOCK)
                                    .include(DataComponents.CONTAINER_LOOT)))
                            .when(ExplosionCondition.survivesExplosion());
-        builder.setRandomSequence(this.asItem().builtInRegistryHolder().unwrapKey().orElseThrow().location());
+        builder.setRandomSequence(this.asItem().builtInRegistryHolder().unwrapKey().orElseThrow().identifier());
 
         return builder.withPool(pool);
     }
@@ -104,12 +107,12 @@ public abstract class BaseChestBlock extends ChestBlock implements BlockModelPro
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(this, CommonBlockTags.CHEST, CommonBlockTags.WOODEN_CHEST);
         }
 
         @Override
-        public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+        public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
             context.add(this, CommonItemTags.CHEST, CommonItemTags.WOODEN_CHEST);
         }
     }

@@ -1,7 +1,7 @@
 package org.betterx.bclib.client.models;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -18,49 +18,49 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class PatternsHelper {
-    private static final Map<ResourceLocation, String> JSON_CACHE = Maps.newConcurrentMap();
+    private static final Map<Identifier, String> JSON_CACHE = Maps.newConcurrentMap();
 
-    public static Optional<String> createItemGenerated(ResourceLocation itemId) {
+    public static Optional<String> createItemGenerated(Identifier itemId) {
         return createJson(BasePatterns.ITEM_GENERATED, itemId);
     }
 
-    public static Optional<String> createItemHandheld(ResourceLocation itemId) {
+    public static Optional<String> createItemHandheld(Identifier itemId) {
         return createJson(BasePatterns.ITEM_HANDHELD, itemId);
     }
 
-    public static Optional<String> createBlockSimple(ResourceLocation blockId) {
+    public static Optional<String> createBlockSimple(Identifier blockId) {
         return createJson(BasePatterns.BLOCK_BASE, blockId);
     }
 
-    public static Optional<String> createBlockEmpty(ResourceLocation blockId) {
+    public static Optional<String> createBlockEmpty(Identifier blockId) {
         return createJson(BasePatterns.BLOCK_EMPTY, blockId);
     }
 
-    public static Optional<String> createBlockPillar(ResourceLocation blockId) {
+    public static Optional<String> createBlockPillar(Identifier blockId) {
         return createJson(BasePatterns.BLOCK_PILLAR, blockId);
     }
 
-    public static Optional<String> createBlockBottomTop(ResourceLocation blockId) {
+    public static Optional<String> createBlockBottomTop(Identifier blockId) {
         return createJson(BasePatterns.BLOCK_BOTTOM_TOP, blockId);
     }
 
-    public static Optional<String> createBlockColored(ResourceLocation blockId) {
+    public static Optional<String> createBlockColored(Identifier blockId) {
         return createJson(BasePatterns.BLOCK_COLORED, blockId);
     }
 
-    public static Optional<JsonObject> getJsonObject(ResourceLocation patternId, ResourceLocation blockId) {
+    public static Optional<JsonObject> getJsonObject(Identifier patternId, Identifier blockId) {
         Optional<String> json = createJson(patternId, blockId);
         return json.map(s -> new Gson().fromJson(s, JsonObject.class));
     }
 
-    public static Optional<String> createJson(ResourceLocation patternId, ResourceLocation blockId) {
+    public static Optional<String> createJson(Identifier patternId, Identifier blockId) {
         Map<String, String> textures = Maps.newHashMap();
         textures.put("%modid%", blockId.getNamespace());
         textures.put("%texture%", blockId.getPath());
         return createJson(patternId, textures);
     }
 
-    public static Optional<String> createJson(ResourceLocation patternId, Map<String, String> textures) {
+    public static Optional<String> createJson(Identifier patternId, Map<String, String> textures) {
         ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
         Optional<Resource> patternRes = resourceManager.getResource(patternId);
         if (patternRes.isEmpty()) return Optional.empty();

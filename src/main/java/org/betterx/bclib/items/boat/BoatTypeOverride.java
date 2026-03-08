@@ -3,17 +3,15 @@ package org.betterx.bclib.items.boat;
 import org.betterx.bclib.BCLib;
 import org.betterx.wover.core.api.ModCore;
 
-import net.minecraft.client.model.*;
+import net.minecraft.client.model.object.boat.BoatModel;
+import net.minecraft.client.model.object.boat.RaftModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BoatItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +25,12 @@ public final class BoatTypeOverride {
     private final String name;
     private final Block planks;
     private final int ordinal;
-    public final ResourceLocation id;
-    public final ResourceLocation boatTexture;
-    public final ResourceLocation chestBoatTexture;
+    public final Identifier id;
+    public final Identifier boatTexture;
+    public final Identifier chestBoatTexture;
     public final ModelLayerLocation boatModelName;
     public final ModelLayerLocation chestBoatModelName;
-    @OnlyIn(Dist.CLIENT)
-    private ListModel<Boat> boatModel, chestBoatModel;
+    private Object boatModel, chestBoatModel;
     private BoatItem boat, chestBoat;
     public final boolean isRaft;
 
@@ -69,41 +66,21 @@ public final class BoatTypeOverride {
         values.add(this);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public ListModel<Boat> getBoatModel(boolean chest) {
+    public Object getBoatModel(boolean chest) {
         return chest ? chestBoatModel : boatModel;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void createBoatModels(EntityRendererProvider.Context context) {
-        if (BCLib.isClient() && boatModel == null) {
-            if (isRaft) {
-                try {
-                    boatModel = new RaftModel(context.bakeLayer(boatModelName));
-                } catch (IllegalArgumentException ex) {
-                    BCLib.LOGGER.warn("Missing model layer {}, using fallback raft model.", boatModelName, ex);
-                    boatModel = new RaftModel(RaftModel.createBodyModel().bakeRoot());
-                }
-                try {
-                    chestBoatModel = new ChestRaftModel(context.bakeLayer(chestBoatModelName));
-                } catch (IllegalArgumentException ex) {
-                    BCLib.LOGGER.warn("Missing model layer {}, using fallback chest raft model.", chestBoatModelName, ex);
-                    chestBoatModel = new ChestRaftModel(ChestRaftModel.createBodyModel().bakeRoot());
-                }
-            } else {
-                try {
-                    boatModel = new BoatModel(context.bakeLayer(boatModelName));
-                } catch (IllegalArgumentException ex) {
-                    BCLib.LOGGER.warn("Missing model layer {}, using fallback boat model.", boatModelName, ex);
-                    boatModel = new BoatModel(BoatModel.createBodyModel().bakeRoot());
-                }
-                try {
-                    chestBoatModel = new ChestBoatModel(context.bakeLayer(chestBoatModelName));
-                } catch (IllegalArgumentException ex) {
-                    BCLib.LOGGER.warn("Missing model layer {}, using fallback chest boat model.", chestBoatModelName, ex);
-                    chestBoatModel = new ChestBoatModel(ChestBoatModel.createBodyModel().bakeRoot());
-                }
-            }
+        if (boatModel == null) {
+            boatModel = isRaft
+                    ? new RaftModel(context.bakeLayer(boatModelName))
+                    : new BoatModel(context.bakeLayer(boatModelName));
+        }
+        if (chestBoatModel == null) {
+            // Chest variants use the same model classes in 1.21.11, but with chest-specific layer definitions.
+            chestBoatModel = isRaft
+                    ? new RaftModel(context.bakeLayer(chestBoatModelName))
+                    : new BoatModel(context.bakeLayer(chestBoatModelName));
         }
     }
 
@@ -132,18 +109,18 @@ public final class BoatTypeOverride {
     }
 
     private static ModelLayerLocation createBoatModelName(String modID, String name) {
-        return new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(modID, "boat/" + name), DEFAULT_LAYER);
+        return new ModelLayerLocation(Identifier.fromNamespaceAndPath(modID, "boat/" + name), DEFAULT_LAYER);
     }
 
     private static ModelLayerLocation createChestBoatModelName(String modID, String name) {
-        return new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(modID, "chest_boat/" + name), DEFAULT_LAYER);
+        return new ModelLayerLocation(Identifier.fromNamespaceAndPath(modID, "chest_boat/" + name), DEFAULT_LAYER);
     }
 
-    private static ResourceLocation getTextureLocation(String modID, String name, boolean chest) {
+    private static Identifier getTextureLocation(String modID, String name, boolean chest) {
         if (chest) {
-            return ResourceLocation.fromNamespaceAndPath(modID, "textures/entity/chest_boat/" + name + ".png");
+            return Identifier.fromNamespaceAndPath(modID, "textures/entity/chest_boat/" + name + ".png");
         }
-        return ResourceLocation.fromNamespaceAndPath(modID, "textures/entity/boat/" + name + ".png");
+        return Identifier.fromNamespaceAndPath(modID, "textures/entity/boat/" + name + ".png");
     }
 
     public static BoatTypeOverride create(ModCore modCore, String name, Block planks) {
@@ -214,5 +191,3 @@ public final class BoatTypeOverride {
     }
 
 }
-
-

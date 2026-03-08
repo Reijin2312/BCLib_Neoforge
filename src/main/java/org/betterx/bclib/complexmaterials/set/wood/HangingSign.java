@@ -54,7 +54,7 @@ public class HangingSign extends MaterialSlot<WoodenComplexMaterial> {
                         .outputCount(3)
                         .shape("I I", "###", "###")
                         .addMaterial('#', parentMaterial.getBlock(WoodSlots.STRIPPED_LOG))
-                        .addMaterial('I', Items.CHAIN)
+                        .addMaterial('I', Items.IRON_CHAIN)
                         .group("sign")
                         .category(RecipeCategory.DECORATIONS)
                         .build(ctx)

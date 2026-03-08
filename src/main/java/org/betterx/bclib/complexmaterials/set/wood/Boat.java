@@ -11,7 +11,7 @@ import org.betterx.wover.recipe.api.RecipeBuilder;
 
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -43,7 +43,7 @@ public class Boat extends SimpleMaterialSlot<WoodenComplexMaterial> {
     }
 
     @Override
-    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, ResourceLocation id) {
+    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, Identifier id) {
         makeBoatRecipe(context, id, parentMaterial.getBlock(WoodSlots.PLANKS), parentMaterial.getItem(suffix));
     }
 
@@ -52,7 +52,7 @@ public class Boat extends SimpleMaterialSlot<WoodenComplexMaterial> {
         parentMaterial.initBoatType();
     }
 
-    public static void makeBoatRecipe(RecipeOutput context, ResourceLocation id, Block planks, Item boat) {
+    public static void makeBoatRecipe(RecipeOutput context, Identifier id, Block planks, Item boat) {
         CraftingRecipeBuilder craftingRecipeBuilder1 = RecipeBuilder
                 .crafting(id, boat);
         CraftingRecipeBuilder craftingRecipeBuilder = craftingRecipeBuilder1.shape("# #", "###")

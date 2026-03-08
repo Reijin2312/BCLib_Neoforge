@@ -297,14 +297,23 @@ publishing {
     }
     repositories {
         maven {
-            def slurper = new groovy.json.JsonSlurper();
-            def apiKey = slurper.parseText(new File(projectDir, "../AMBER_TOKEN").text)
+            def amberFile = new File(projectDir, "../AMBER_TOKEN")
+            def amberJson = null
+            if (amberFile.exists()) {
+                try {
+                    amberJson = new groovy.json.JsonSlurper().parseText(amberFile.text)
+                } catch (Exception ignored) {
+                    println "AMBER_TOKEN is not valid JSON, skipping Maven publish credentials."
+                }
+            }
             println "\nPublishing ${project.archives_base_name} to Maven..."
             name = "Ambertation"
             url = "https://maven.ambertation.de/releases/"
-            credentials {
-                username = apiKey.username
-                password = apiKey.token
+            if (amberJson != null) {
+                credentials {
+                    username = amberJson.username
+                    password = amberJson.token
+                }
             }
         }
     }

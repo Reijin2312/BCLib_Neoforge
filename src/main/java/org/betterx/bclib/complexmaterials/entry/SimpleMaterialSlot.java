@@ -3,7 +3,7 @@ package org.betterx.bclib.complexmaterials.entry;
 import org.betterx.bclib.complexmaterials.ComplexMaterial;
 
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
@@ -47,7 +47,7 @@ public abstract class SimpleMaterialSlot<M extends ComplexMaterial> extends Mate
     }
 
     protected abstract @Nullable void makeRecipe(
-            RecipeOutput context, ComplexMaterial parentMaterial, ResourceLocation id
+            RecipeOutput context, ComplexMaterial parentMaterial, Identifier id
     );
 
     @Override
@@ -88,7 +88,7 @@ public abstract class SimpleMaterialSlot<M extends ComplexMaterial> extends Mate
 
             @Override
             protected @Nullable void makeRecipe(
-                    RecipeOutput context, ComplexMaterial parentMaterial, ResourceLocation id
+                    RecipeOutput context, ComplexMaterial parentMaterial, Identifier id
             ) {
 
             }
@@ -107,7 +107,7 @@ public abstract class SimpleMaterialSlot<M extends ComplexMaterial> extends Mate
 
             @Override
             protected @Nullable void makeRecipe(
-                    RecipeOutput context, ComplexMaterial parentMaterial, ResourceLocation id
+                    RecipeOutput context, ComplexMaterial parentMaterial, Identifier id
             ) {
 
             }

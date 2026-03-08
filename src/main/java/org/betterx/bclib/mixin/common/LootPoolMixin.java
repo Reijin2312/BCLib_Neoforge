@@ -52,6 +52,3 @@ public class LootPoolMixin implements LootPoolAccessor {
         );
     }
 }
-
-
-

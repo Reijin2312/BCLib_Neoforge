@@ -7,7 +7,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -45,7 +45,7 @@ public class BlockLootTableProvider extends LootTableProvider {
         public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> biConsumer) {
             for (Block block : BuiltInRegistries.BLOCK) {
                 if (block instanceof LootDropProvider dropper) {
-                    ResourceLocation id = BuiltInRegistries.BLOCK.getKey(block);
+                    Identifier id = BuiltInRegistries.BLOCK.getKey(block);
                     if (id != null && shouldInclude(id)) {
                         LootTable.Builder builder = LootTable.lootTable();
                         dropper.getDroppedItemsBCL(builder);
@@ -55,7 +55,7 @@ public class BlockLootTableProvider extends LootTableProvider {
             }
         }
 
-        private boolean shouldInclude(ResourceLocation id) {
+        private boolean shouldInclude(Identifier id) {
             return modIDs == null || modIDs.isEmpty() || modIDs.contains(id.getNamespace());
         }
     }

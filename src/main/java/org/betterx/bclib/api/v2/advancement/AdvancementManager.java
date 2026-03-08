@@ -7,15 +7,16 @@ import org.betterx.wover.complex.api.equipment.EquipmentSet;
 import org.betterx.wover.complex.api.equipment.ToolSlot;
 
 import net.minecraft.advancements.*;
-import net.minecraft.advancements.critereon.*;
-import net.minecraft.client.Minecraft;
+import net.minecraft.advancements.criterion.*;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -38,9 +39,23 @@ public class AdvancementManager {
         }
     }
 
-    private static final Map<ResourceLocation, Advancement.Builder> ADVANCEMENTS = new LinkedHashMap<>();
+    private static final Map<Identifier, Advancement.Builder> ADVANCEMENTS = new LinkedHashMap<>();
 
-    public static void register(ResourceLocation id, Advancement.Builder builder) {
+    private static ResourceKey<Recipe<?>> recipeKey(Identifier id) {
+        return ResourceKey.create(Registries.RECIPE, id);
+    }
+
+    private static Item getRecipeResultIcon(Recipe<?> recipe) {
+        return recipe.display()
+                     .stream()
+                     .map(display -> display.result().resolveForFirstStack(ContextMap.EMPTY))
+                     .filter(stack -> !stack.isEmpty())
+                     .map(ItemStack::getItem)
+                     .findFirst()
+                     .orElse(Items.KNOWLEDGE_BOOK);
+    }
+
+    public static void register(Identifier id, Advancement.Builder builder) {
         ADVANCEMENTS.put(id, builder);
     }
 
@@ -51,10 +66,10 @@ public class AdvancementManager {
                                                                          CriteriaTriggers.IMPOSSIBLE.createCriterion(new ImpossibleTrigger.TriggerInstance())
                                                                  )
                                                                  .build(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT);
-        final Map<ResourceLocation, AdvancementHolder> BUILT = new HashMap<>();
+        final Map<Identifier, AdvancementHolder> BUILT = new HashMap<>();
 
         for (var entry : ADVANCEMENTS.entrySet()) {
-            final ResourceLocation loc = entry.getKey();
+            final Identifier loc = entry.getKey();
             if (namespaces == null || namespaces.contains(loc.getNamespace())) {
                 final Advancement.Builder builder = entry.getValue();
                 final AdvancementHolder adv = builder.build(loc);
@@ -85,12 +100,17 @@ public class AdvancementManager {
         }
 
 
-        public RewardsBuilder addRecipe(ResourceLocation resourceLocation) {
-            builder.addRecipe(resourceLocation);
+        public RewardsBuilder addRecipe(Identifier resourceLocation) {
+            builder.addRecipe(recipeKey(resourceLocation));
             return this;
         }
 
-        public RewardsBuilder runs(ResourceLocation resourceLocation) {
+        public RewardsBuilder addRecipe(ResourceKey<Recipe<?>> resourceKey) {
+            builder.addRecipe(resourceKey);
+            return this;
+        }
+
+        public RewardsBuilder runs(Identifier resourceLocation) {
             builder.runs(resourceLocation);
             return this;
         }
@@ -109,21 +129,21 @@ public class AdvancementManager {
 
     public static class Builder {
         private static final ThreadLocal<DisplayBuilder> DISPLAY_BUILDER = ThreadLocal.withInitial(DisplayBuilder::new);
-        private static final ResourceLocation RECIPES_ROOT = RecipeBuilder.ROOT_RECIPE_ADVANCEMENT;
+        private static final Identifier RECIPES_ROOT = RecipeBuilder.ROOT_RECIPE_ADVANCEMENT;
 
         private final Advancement.Builder builder = new OrderedBuilder();
-        private final ResourceLocation id;
+        private final Identifier id;
         private final AdvancementType type;
         private boolean canBuild = true;
 
         @SuppressWarnings("removal")
-        private Builder(ResourceLocation id, AdvancementType type) {
-            ResourceLocation ID;
+        private Builder(Identifier id, AdvancementType type) {
+            Identifier ID;
             if (type == AdvancementType.RECIPE_DECORATIONS) {
-                ID = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "recipes/decorations/" + id.getPath());
+                ID = Identifier.fromNamespaceAndPath(id.getNamespace(), "recipes/decorations/" + id.getPath());
                 builder.parent(RECIPES_ROOT); //will be root by default
             } else if (type == AdvancementType.RECIPE_TOOL) {
-                ID = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "recipes/tools/" + id.getPath());
+                ID = Identifier.fromNamespaceAndPath(id.getNamespace(), "recipes/tools/" + id.getPath());
                 builder.parent(RECIPES_ROOT); //will be root by default
             } else {
                 ID = id;
@@ -136,11 +156,11 @@ public class AdvancementManager {
             return new Builder(builder.id, builder.type);
         }
 
-        public static Builder create(ResourceLocation id) {
+        public static Builder create(Identifier id) {
             return new Builder(id, AdvancementType.REGULAR);
         }
 
-        public static Builder create(ResourceLocation id, AdvancementType type) {
+        public static Builder create(Identifier id, AdvancementType type) {
             return new Builder(id, type);
         }
 
@@ -194,7 +214,7 @@ public class AdvancementManager {
                 T recipe,
                 AdvancementType type
         ) {
-            Item item = recipe.value().getResultItem(Minecraft.getInstance().level.registryAccess()).getItem();
+            Item item = getRecipeResultIcon(recipe.value());
             return create(item, type, displayBuilder -> displayBuilder.hideToast().hideFromChat())
                     //.awardRecipe(item)
                     .addRecipeUnlockCriterion("has_the_recipe", recipe)
@@ -211,7 +231,7 @@ public class AdvancementManager {
 
         @SuppressWarnings("removal")
         @Deprecated(forRemoval = true)
-        public Builder parent(ResourceLocation resourceLocation) {
+        public Builder parent(Identifier resourceLocation) {
             builder.parent(resourceLocation);
             return this;
         }
@@ -258,7 +278,7 @@ public class AdvancementManager {
         public Builder awardRecipe(ItemLike... items) {
             RewardsBuilder rewardBuilder = startReward();
             for (ItemLike item : items) {
-                ResourceLocation id = BuiltInRegistries.ITEM.getKey(item.asItem());
+                Identifier id = BuiltInRegistries.ITEM.getKey(item.asItem());
                 if (id == null) continue;
                 rewardBuilder.addRecipe(id);
             }
@@ -323,7 +343,7 @@ public class AdvancementManager {
         public Builder addInventoryChangedAnyCriterion(String name, ItemLike... items) {
             final Criterion<InventoryChangeTrigger.TriggerInstance> t =
                     InventoryChangeTrigger.TriggerInstance.hasItems(
-                            ItemPredicate.Builder.item().of(items)
+                            ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, items)
                     );
 
             return addCriterion(name, t);
@@ -332,7 +352,7 @@ public class AdvancementManager {
         public Builder addInventoryChangedCriterion(String name, TagKey<Item> tag) {
             final Criterion<InventoryChangeTrigger.TriggerInstance> t =
                     InventoryChangeTrigger.TriggerInstance.hasItems(
-                            ItemPredicate.Builder.item().of(tag)
+                            ItemPredicate.Builder.item().of(BuiltInRegistries.ITEM, tag)
                     );
 
             return addCriterion(name, t);
@@ -381,7 +401,7 @@ public class AdvancementManager {
         public Builder addVisitBiomesCriterion(List<Holder<Biome>> list) {
             for (Holder<Biome> holder : list) {
                 addCriterion(
-                        holder.unwrapKey().orElseThrow().location().toString(),
+                        holder.unwrapKey().orElseThrow().identifier().toString(),
                         PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inBiome(holder))
                 );
             }
@@ -416,7 +436,7 @@ public class AdvancementManager {
             return this;
         }
 
-        public ResourceLocation build() {
+        public Identifier build() {
             AdvancementManager.register(id, this.builder);
             return this.id;
         }
@@ -432,7 +452,7 @@ public class AdvancementManager {
             return this;
         }
 
-        public DisplayBuilder background(ResourceLocation value) {
+        public DisplayBuilder background(Identifier value) {
             display.background = value;
             return this;
         }

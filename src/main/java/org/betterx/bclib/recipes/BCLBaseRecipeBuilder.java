@@ -7,11 +7,11 @@ import org.betterx.wover.recipe.impl.BaseRecipeBuilderImpl;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -36,14 +36,14 @@ public abstract class BCLBaseRecipeBuilder<I extends BaseRecipeBuilder<I>, R ext
     private final boolean dualInput;
 
     protected BCLBaseRecipeBuilder(
-            @NotNull ResourceLocation id,
+            @NotNull Identifier id,
             @NotNull ItemLike output,
             boolean dualInput
     ) {
         this(id, new ItemStack(output, 1), dualInput);
     }
 
-    protected BCLBaseRecipeBuilder(@NotNull ResourceLocation id, @NotNull ItemStack output, boolean dualInput) {
+    protected BCLBaseRecipeBuilder(@NotNull Identifier id, @NotNull ItemStack output, boolean dualInput) {
         super(id, output);
         this.advancement = Advancement.Builder.advancement();
         this.dualInput = dualInput;
@@ -76,21 +76,21 @@ public abstract class BCLBaseRecipeBuilder<I extends BaseRecipeBuilder<I>, R ext
             CustomData.update(BCLDataComponents.ANVIL_ENTITY_DATA, this.output, this.outputTagConsumer);
 
         final R recipe = createRecipe(id);
-        ctx.accept(id, recipe, advancementHolder);
+        ctx.accept(recipeKey(id), recipe, advancementHolder);
     }
 
-    protected abstract R createRecipe(ResourceLocation id);
+    protected abstract R createRecipe(Identifier id);
 
     @SuppressWarnings("removal")
     protected void setupAdvancementForResult() {
         advancement
                 .parent(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT)//automatically at root level
-                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
-                .rewards(net.minecraft.advancements.AdvancementRewards.Builder.recipe(id))
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(recipeKey(id)))
+                .rewards(net.minecraft.advancements.AdvancementRewards.Builder.recipe(recipeKey(id)))
                 .requirements(AdvancementRequirements.Strategy.OR);
     }
 
-    protected ResourceLocation createAdvancementId() {
+    protected Identifier createAdvancementId() {
         return id.withPrefix("recipes/" + category.getFolderName() + "/");
     }
 
@@ -100,7 +100,7 @@ public abstract class BCLBaseRecipeBuilder<I extends BaseRecipeBuilder<I>, R ext
     }
 
     public I setPrimaryInput(TagKey<Item> input) {
-        this.primaryInput = Ingredient.of(input);
+        this.primaryInput = ingredientOf(input);
         return (I) this;
     }
 
@@ -123,7 +123,7 @@ public abstract class BCLBaseRecipeBuilder<I extends BaseRecipeBuilder<I>, R ext
     }
 
     public I setSecondaryInput(TagKey<Item> input) {
-        this.secondaryInput = Ingredient.of(input);
+        this.secondaryInput = ingredientOf(input);
         return (I) this;
     }
 
@@ -142,7 +142,7 @@ public abstract class BCLBaseRecipeBuilder<I extends BaseRecipeBuilder<I>, R ext
 
     public I setOutputTag(CompoundTag tag) {
         this.outputTagConsumer = (itemTag) -> {
-            for (String k : tag.getAllKeys()) {
+            for (String k : tag.keySet()) {
                 itemTag.put(k, tag.get(k));
             }
         };

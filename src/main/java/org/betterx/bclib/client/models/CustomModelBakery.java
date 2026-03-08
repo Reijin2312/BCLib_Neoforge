@@ -5,13 +5,12 @@ import org.betterx.bclib.interfaces.ItemModelProvider;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 import org.betterx.bclib.models.RecordItemModelProvider;
 
-import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.multipart.MultiPart;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.model.multipart.MultiPartModel;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,17 +23,22 @@ import java.util.List;
 import java.util.Map;
 
 public class CustomModelBakery {
-    private record StateModelPair(BlockState state, UnbakedModel model) {
+    private record StateModelPair(BlockState state, BlockStateModel.UnbakedRoot model) {
     }
 
-    private final Map<ResourceLocation, UnbakedModel> models = Maps.newConcurrentMap();
+    private final Map<Identifier, UnbakedModel> models = Maps.newConcurrentMap();
+    private final Map<Identifier, BlockStateModel.UnbakedRoot> blockStateModels = Maps.newConcurrentMap();
     private final Map<Block, List<StateModelPair>> blockModels = Maps.newConcurrentMap();
 
-    public UnbakedModel getBlockModel(ResourceLocation location) {
+    public UnbakedModel getBlockModel(Identifier location) {
         return models.get(location);
     }
 
-    public UnbakedModel getItemModel(ResourceLocation location) {
+    public BlockStateModel.UnbakedRoot getBlockStateModel(Identifier location) {
+        return blockStateModels.get(location);
+    }
+
+    public UnbakedModel getItemModel(Identifier location) {
         return models.get(location);
     }
 
@@ -42,20 +46,20 @@ public class CustomModelBakery {
         BuiltInRegistries.BLOCK.stream()
                                .filter(block -> block instanceof RuntimeBlockModelProvider)
                                .forEach(block -> {
-                                   ResourceLocation blockID = BuiltInRegistries.BLOCK.getKey(block);
+                                   Identifier blockID = BuiltInRegistries.BLOCK.getKey(block);
                                    if (blockID == null) {
                                        BCLib.LOGGER.warn("Skip runtime block model: missing registry key for {}", block);
                                        return;
                                    }
                                    try {
-                                       ResourceLocation storageID = ResourceLocation.fromNamespaceAndPath(
+                                       Identifier storageID = Identifier.fromNamespaceAndPath(
                                                blockID.getNamespace(),
                                                "blockstates/" + blockID.getPath() + ".json"
                                        );
                                        if (resourceManager.getResource(storageID).isEmpty()) {
                                            addBlockModel(blockID, block);
                                        }
-                                       storageID = ResourceLocation.fromNamespaceAndPath(
+                                       storageID = Identifier.fromNamespaceAndPath(
                                                blockID.getNamespace(),
                                                "models/item/" + blockID.getPath() + ".json"
                                        );
@@ -70,13 +74,13 @@ public class CustomModelBakery {
         BuiltInRegistries.ITEM.stream()
                               .filter(item -> item instanceof ItemModelProvider || RecordItemModelProvider.has(item))
                               .forEach(item -> {
-                                  ResourceLocation registryID = BuiltInRegistries.ITEM.getKey(item);
+                                  Identifier registryID = BuiltInRegistries.ITEM.getKey(item);
                                   if (registryID == null) {
                                       BCLib.LOGGER.warn("Skip runtime item model: missing registry key for {}", item);
                                       return;
                                   }
                                   try {
-                                      ResourceLocation storageID = ResourceLocation.fromNamespaceAndPath(
+                                      Identifier storageID = Identifier.fromNamespaceAndPath(
                                               registryID.getNamespace(),
                                               "models/item/" + registryID.getPath() + ".json"
                                       );
@@ -97,51 +101,46 @@ public class CustomModelBakery {
                               });
     }
 
-    private void addBlockModel(ResourceLocation blockID, Block block) {
+    private void addBlockModel(Identifier blockID, Block block) {
         RuntimeBlockModelProvider provider = (RuntimeBlockModelProvider) block;
         ImmutableList<BlockState> states = block.getStateDefinition().getPossibleStates();
         BlockState defaultState = block.defaultBlockState();
 
-        ModelResourceLocation defaultStateID = BlockModelShaper.stateToModelLocation(blockID, defaultState);
-        UnbakedModel defaultModel = provider.getModelVariant(defaultStateID, defaultState, models);
+        Identifier defaultStateID = blockID;
+        BlockStateModel.UnbakedRoot defaultModel = provider.getModelVariant(defaultStateID, defaultState, models);
         if (defaultModel == null) {
             BCLib.LOGGER.warn("Skip runtime block model: missing default model for {}", blockID);
             return;
         }
 
         List<StateModelPair> stateModels = new ArrayList<>(states.size());
-        if (defaultModel instanceof MultiPart) {
+        if (defaultModel instanceof MultiPartModel.Unbaked) {
             states.forEach(blockState -> {
-                ModelResourceLocation stateID = BlockModelShaper.stateToModelLocation(blockID, blockState);
-                models.put(stateID.id(), defaultModel);
+                Identifier stateKey = stateKey(blockID, blockState);
+                blockStateModels.put(stateKey, defaultModel);
                 stateModels.add(new StateModelPair(blockState, defaultModel));
             });
         } else {
             states.forEach(blockState -> {
-                ModelResourceLocation stateID = BlockModelShaper.stateToModelLocation(blockID, blockState);
-                UnbakedModel model = stateID.equals(defaultStateID)
+                Identifier stateID = blockID;
+                BlockStateModel.UnbakedRoot model = blockState.equals(defaultState)
                         ? defaultModel
                         : provider.getModelVariant(stateID, blockState, models);
                 if (model == null) {
-                    BCLib.LOGGER.warn("Skip runtime block model: missing model for {}", stateID);
+                    BCLib.LOGGER.warn("Skip runtime block model: missing model for {} {}", blockID, blockState);
                     model = defaultModel;
                 }
-                models.put(stateID.id(), model);
+                blockStateModels.put(stateKey(blockID, blockState), model);
                 stateModels.add(new StateModelPair(blockState, model));
             });
         }
         blockModels.put(block, stateModels);
     }
 
-    private void addItemModel(ResourceLocation itemID, ItemModelProvider provider) {
-        ModelResourceLocation modelLocation = new ModelResourceLocation(
-                itemID,
-                "inventory"
-        );
-
-        ResourceLocation modelKey = modelLocation.id();
+    private void addItemModel(Identifier itemID, ItemModelProvider provider) {
+        Identifier modelKey = itemID;
         if (!models.containsKey(modelKey)) {
-            ResourceLocation itemModelLocation = itemID.withPrefix("item/");
+            Identifier itemModelLocation = itemID.withPrefix("item/");
             BlockModel model = provider.getItemModel(modelKey);
             if (model == null) {
                 BCLib.LOGGER.warn("Skip runtime item model: missing model for {}", itemID);
@@ -150,5 +149,12 @@ public class CustomModelBakery {
             models.put(modelKey, model);
             models.put(itemModelLocation, model);
         }
+    }
+
+    private static Identifier stateKey(Identifier blockId, BlockState blockState) {
+        return Identifier.fromNamespaceAndPath(
+                blockId.getNamespace(),
+                "runtime_blockstates/" + blockId.getPath() + "_" + Integer.toUnsignedString(blockState.hashCode(), 16)
+        );
     }
 }

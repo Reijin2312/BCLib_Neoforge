@@ -18,13 +18,11 @@ public class TripWireBlockMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"
-            )
+            ),
+            remap = false
     )
     private boolean bclib_isShears(ItemStack stack, ItemAbility ability, Operation<Boolean> original) {
         // Preserve vanilla/NeoForge check, then allow custom shears to disarm tripwire.
         return original.call(stack, ability) || BaseShearsItem.isShear(stack);
     }
 }
-
-
-

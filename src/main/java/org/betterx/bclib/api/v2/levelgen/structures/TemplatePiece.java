@@ -11,7 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -29,12 +29,11 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnorePr
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import net.neoforged.neoforge.registries.RegisterEvent;
 
 public class TemplatePiece extends TemplateStructurePiece {
     private final int erosion;
     private final boolean cover;
-    public static final ResourceLocation ID = BCLib.makeID("template_piece");
+    public static final Identifier ID = BCLib.makeID("template_piece");
     public static StructurePieceType INSTANCE;
 
     public static void register(net.neoforged.neoforge.registries.RegisterEvent event) {
@@ -51,7 +50,7 @@ public class TemplatePiece extends TemplateStructurePiece {
 
     public TemplatePiece(
             StructureTemplateManager structureTemplateManager,
-            ResourceLocation resourceLocation,
+            Identifier resourceLocation,
             BlockPos centerPos,
             Rotation rotation,
             Mirror mirror,
@@ -62,7 +61,7 @@ public class TemplatePiece extends TemplateStructurePiece {
 
     public TemplatePiece(
             StructureTemplateManager structureTemplateManager,
-            ResourceLocation resourceLocation,
+            Identifier resourceLocation,
             BlockPos centerPos,
             Rotation rotation,
             Mirror mirror,
@@ -88,15 +87,15 @@ public class TemplatePiece extends TemplateStructurePiece {
                 INSTANCE,
                 compoundTag,
                 structureTemplateManager,
-                (ResourceLocation resourceLocation) -> makeSettings(compoundTag)
+                (Identifier resourceLocation) -> makeSettings(compoundTag)
         );
         if (compoundTag.contains("E"))
-            this.erosion = compoundTag.getInt("E");
+            this.erosion = compoundTag.getIntOr("E", 0);
         else
             this.erosion = 0;
 
         if (compoundTag.contains("C"))
-            this.cover = compoundTag.getBoolean("C");
+            this.cover = compoundTag.getBooleanOr("C", true);
         else
             this.cover = true;
     }
@@ -113,9 +112,13 @@ public class TemplatePiece extends TemplateStructurePiece {
 
     private static StructurePlaceSettings makeSettings(CompoundTag compoundTag) {
         return makeSettings(
-                Rotation.valueOf(compoundTag.getString("R")),
-                Mirror.valueOf(compoundTag.getString("M")),
-                new BlockPos(compoundTag.getInt("RX"), compoundTag.getInt("RY"), compoundTag.getInt("RZ"))
+                Rotation.valueOf(compoundTag.getString("R").orElse("")),
+                Mirror.valueOf(compoundTag.getString("M").orElse("")),
+                new BlockPos(
+                        compoundTag.getIntOr("RX", 0),
+                        compoundTag.getIntOr("RY", 0),
+                        compoundTag.getIntOr("RZ", 0)
+                )
         );
 
     }

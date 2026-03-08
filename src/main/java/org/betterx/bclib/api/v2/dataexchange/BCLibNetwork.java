@@ -4,9 +4,9 @@ import org.betterx.bclib.BCLib;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerPlayer;
 
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -22,11 +22,16 @@ public final class BCLibNetwork {
 
     public static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(BCLib.MOD_ID);
-        registrar.playBidirectional(BCLibPayload.TYPE, BCLibPayload.STREAM_CODEC, BCLibNetwork::handleBidirectional);
+        registrar.playBidirectional(
+                BCLibPayload.TYPE,
+                BCLibPayload.STREAM_CODEC,
+                BCLibNetwork::handleFromClient,
+                BCLibNetwork::handleFromServer
+        );
     }
 
     public static void sendToServer(CustomPacketPayload payload) {
-        PacketDistributor.sendToServer(BCLibPayload.from(payload));
+        ClientPacketDistributor.sendToServer(BCLibPayload.from(payload));
     }
 
     public static void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
@@ -62,14 +67,6 @@ public final class BCLibNetwork {
             }
             descriptor.receiveFromServer(payload, ClientPacketSender.INSTANCE, Minecraft.getInstance());
         });
-    }
-
-    private static void handleBidirectional(BCLibPayload message, IPayloadContext context) {
-        if (context.flow() == PacketFlow.SERVERBOUND) {
-            handleFromClient(message, context);
-        } else {
-            handleFromServer(message, context);
-        }
     }
 
     private static final class ClientPacketSender implements PacketSender {

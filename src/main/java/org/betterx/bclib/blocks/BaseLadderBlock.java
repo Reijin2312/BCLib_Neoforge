@@ -10,19 +10,15 @@ import org.betterx.bclib.client.render.BCLRenderLayer;
 import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.wover.block.api.model.BlockModelProvider;
 import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
-
 import org.betterx.wover.block.api.model.WoverBlockModelGeneratorsAccess;
-import net.minecraft.data.models.blockstates.MultiVariantGenerator;
-import net.minecraft.data.models.blockstates.Variant;
-import net.minecraft.data.models.blockstates.VariantProperties;
-import net.minecraft.data.models.model.TextureMapping;
-import net.minecraft.data.models.model.TextureSlot;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseLadderBlock extends LadderBlock implements RenderLayerProvider, BehaviourClimable, DropSelfLootProvider<BaseLadderBlock>, BlockModelProvider {
     protected BaseLadderBlock(Block block) {
@@ -38,7 +34,6 @@ public abstract class BaseLadderBlock extends LadderBlock implements RenderLayer
         return BCLRenderLayer.CUTOUT;
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         var mapping = new TextureMapping()
@@ -46,7 +41,7 @@ public abstract class BaseLadderBlock extends LadderBlock implements RenderLayer
         var location = BCLModels.LADDER.create(this, mapping, generator.modelOutput());
 
         generator.acceptBlockState(MultiVariantGenerator
-                .multiVariant(this, Variant.variant().with(VariantProperties.MODEL, location))
+                .dispatch(this, BlockModelGenerators.plainVariant(location))
                 .with(WoverBlockModelGeneratorsAccess.createHorizontalFacingDispatch()));
 
         generator.createFlatItem(this);
@@ -78,4 +73,3 @@ public abstract class BaseLadderBlock extends LadderBlock implements RenderLayer
         );
     }
 }
-

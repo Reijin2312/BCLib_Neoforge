@@ -56,4 +56,3 @@ public abstract class ForcedLevelPatch extends Patch {
      */
     abstract protected Boolean runLevelDatPatch(CompoundTag root, MigrationProfile profile);
 }
-

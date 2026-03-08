@@ -6,13 +6,13 @@ import org.betterx.bclib.complexmaterials.entry.SlotMap;
 import org.betterx.bclib.complexmaterials.set.stone.StoneSlots;
 import org.betterx.wover.core.api.ModCore;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
 public class StoneComplexMaterial extends ComplexMaterialSet<StoneComplexMaterial> {
-    public static final ResourceLocation MATERIAL_ID = BCLib.makeID("stone_material");
+    public static final Identifier MATERIAL_ID = BCLib.makeID("stone_material");
     public final MapColor color;
     public final Block sourceBlock;
 
@@ -34,7 +34,7 @@ public class StoneComplexMaterial extends ComplexMaterialSet<StoneComplexMateria
     }
 
     @Override
-    public ResourceLocation getMaterialID() {
+    public Identifier getMaterialID() {
         return MATERIAL_ID;
     }
 

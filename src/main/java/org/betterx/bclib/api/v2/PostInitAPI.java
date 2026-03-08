@@ -12,7 +12,7 @@ import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.bclib.items.tool.BaseShearsItem;
 import org.betterx.bclib.registry.BaseBlockEntities;
 
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.dispenser.ShearsDispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
@@ -22,8 +22,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import com.google.common.collect.Lists;
 
@@ -70,14 +68,13 @@ public class PostInitAPI {
         itemTags = null;
     }
 
-    @OnlyIn(Dist.CLIENT)
     private static void processBlockClient(Block block) {
         if (block instanceof RenderLayerProvider) {
             BCLRenderLayer layer = ((RenderLayerProvider) block).getRenderLayer();
             if (layer == BCLRenderLayer.CUTOUT) {
-                ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(block, ChunkSectionLayer.CUTOUT);
             } else if (layer == BCLRenderLayer.TRANSLUCENT) {
-                ItemBlockRenderTypes.setRenderLayer(block, RenderType.translucent());
+                ItemBlockRenderTypes.setRenderLayer(block, ChunkSectionLayer.TRANSLUCENT);
             }
         }
         if (block instanceof BaseChestBlock) {
@@ -114,4 +111,3 @@ public class PostInitAPI {
         }
     }
 }
-

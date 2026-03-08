@@ -85,9 +85,11 @@ public interface SurfaceMaterialProvider {
         if (biome != null) {
             BiomeData data = WorldState
                     .registryAccess()
-                    .registry(BiomeDataRegistry.BIOME_DATA_REGISTRY)
+                    .lookup(BiomeDataRegistry.BIOME_DATA_REGISTRY)
                     .orElseThrow()
-                    .get(biome.unwrapKey().orElseThrow().location());
+                    .get(biome.unwrapKey().orElseThrow().identifier())
+                    .map(Holder.Reference::value)
+                    .orElse(null);
 
             if (data instanceof SurfaceMaterialProvider smp) {
                 return Optional.of(smp);

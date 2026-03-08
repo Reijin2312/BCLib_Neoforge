@@ -14,7 +14,7 @@ import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.BlockItem;
@@ -22,8 +22,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SlabBlock;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseSlabBlock extends SlabBlock implements CustomBlockItemProvider, BlockTagProvider, ItemTagProvider, DropSelfLootProvider<BaseSlabBlock>, BlockModelProvider {
     private final Block parent;
@@ -36,23 +34,22 @@ public abstract class BaseSlabBlock extends SlabBlock implements CustomBlockItem
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         generator.createSlab(this, parent);
     }
 
     @Override
-    public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+    public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
         context.add(BlockTags.SLABS, this);
     }
 
     @Override
-    public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+    public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
         context.add(ItemTags.SLABS, this);
     }
 
     @Override
-    public BlockItem getCustomBlockItem(ResourceLocation blockID, Item.Properties settings) {
+    public BlockItem getCustomBlockItem(Identifier blockID, Item.Properties settings) {
         if (fireproof) settings = settings.fireResistant();
         return new BlockItem(this, settings);
     }
@@ -87,12 +84,12 @@ public abstract class BaseSlabBlock extends SlabBlock implements CustomBlockItem
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(this, BlockTags.SLABS, BlockTags.WOODEN_SLABS);
         }
 
         @Override
-        public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+        public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
             context.add(this, ItemTags.SLABS, ItemTags.WOODEN_SLABS);
         }
     }
@@ -118,4 +115,3 @@ public abstract class BaseSlabBlock extends SlabBlock implements CustomBlockItem
         );
     }
 }
-

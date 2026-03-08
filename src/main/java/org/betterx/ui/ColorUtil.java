@@ -8,14 +8,12 @@ import org.betterx.bclib.util.MHelper;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import com.google.common.collect.Maps;
 
@@ -295,26 +293,25 @@ public class ColorUtil {
         return MHelper.sqr(r1 - r2) + MHelper.sqr(g1 - g2) + MHelper.sqr(b1 - b2);
     }
 
-    private static final Map<ResourceLocation, Integer> colorPalette = Maps.newHashMap();
+    private static final Map<Identifier, Integer> colorPalette = Maps.newHashMap();
 
-    @OnlyIn(Dist.CLIENT)
     public static int extractColor(Item item) {
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        Identifier id = BuiltInRegistries.ITEM.getKey(item);
         if (id.equals(BuiltInRegistries.ITEM.getDefaultKey())) return -1;
         if (colorPalette.containsKey(id)) {
             return colorPalette.get(id);
         }
-        ResourceLocation texture;
+        Identifier texture;
         if (item instanceof BlockItem) {
-            texture = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "textures/block/" + id.getPath() + ".png");
+            texture = Identifier.fromNamespaceAndPath(id.getNamespace(), "textures/block/" + id.getPath() + ".png");
         } else {
-            texture = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "textures/item/" + id.getPath() + ".png");
+            texture = Identifier.fromNamespaceAndPath(id.getNamespace(), "textures/item/" + id.getPath() + ".png");
         }
         NativeImage image = loadImage(texture, 16, 16);
         List<Integer> colors = new ArrayList<>();
         for (int i = 0; i < image.getWidth(); i++) {
             for (int j = 0; j < 16; j++) {
-                int col = image.getPixelRGBA(i, j);
+                int col = image.getPixel(i, j);
                 if (((col >> 24) & 255) > 0) {
                     colors.add(ABGRtoARGB(col));
                 }
@@ -331,8 +328,7 @@ public class ColorUtil {
         return color;
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public static NativeImage loadImage(ResourceLocation image, int w, int h) {
+    public static NativeImage loadImage(Identifier image, int w, int h) {
         Minecraft minecraft = Minecraft.getInstance();
         ResourceManager resourceManager = minecraft.getResourceManager();
         var imgResource = resourceManager.getResource(image);

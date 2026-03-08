@@ -5,6 +5,7 @@ import org.betterx.bclib.behaviours.interfaces.BehaviourMetal;
 import org.betterx.bclib.behaviours.interfaces.BehaviourStone;
 import org.betterx.bclib.behaviours.interfaces.BehaviourWood;
 import org.betterx.bclib.complexmaterials.BCLWoodTypeWrapper;
+import org.betterx.wover.block.api.BlockRegistry;
 import org.betterx.wover.block.api.BlockTagProvider;
 import org.betterx.wover.block.api.CustomBlockItemProvider;
 import org.betterx.wover.block.api.model.BlockModelProvider;
@@ -13,7 +14,7 @@ import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.BlockItem;
@@ -27,8 +28,6 @@ import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.function.Supplier;
 
@@ -68,25 +67,36 @@ public abstract class BaseHangingSignBlock extends CeilingHangingSignBlock imple
     }
 
     @Override
-    public BlockItem getCustomBlockItem(ResourceLocation blockID, Item.Properties settings) {
+    public BlockItem getCustomBlockItem(Identifier blockID, Item.Properties settings) {
         if (customItem == null) {
-            customItem = new HangingSignItem(this, getWallSignBlock(), settings.stacksTo(16));
+            customItem = new HangingSignItem(
+                    this,
+                    BlockRegistry.withConstructionId(getWallSignId(blockID), this::getWallSignBlock),
+                    settings.stacksTo(16)
+            );
         }
         return customItem;
     }
 
+    private static Identifier getWallSignId(Identifier blockID) {
+        final String path = blockID.getPath();
+        final String wallPath = path.endsWith("hanging_sign")
+                ? path.substring(0, path.length() - "hanging_sign".length()) + "wall_hanging_sign"
+                : path + "_wall_hanging_sign";
+        return Identifier.fromNamespaceAndPath(blockID.getNamespace(), wallPath);
+    }
+
     @Override
-    public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+    public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
         context.add(this, BlockTags.CEILING_HANGING_SIGNS);
     }
 
     @Override
-    public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+    public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
         context.add(this, ItemTags.HANGING_SIGNS);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         generator.createHangingSign(parent, this, getWallSignBlock());
     }
@@ -137,4 +147,3 @@ public abstract class BaseHangingSignBlock extends CeilingHangingSignBlock imple
         return new BaseHangingSignBlock.Wood(parent, type);
     }
 }
-

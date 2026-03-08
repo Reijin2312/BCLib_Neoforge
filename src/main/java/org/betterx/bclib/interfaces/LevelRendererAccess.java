@@ -4,12 +4,9 @@ package org.betterx.bclib.interfaces;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleOptions;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import org.jetbrains.annotations.Nullable;
 
-@OnlyIn(Dist.CLIENT)
 public interface LevelRendererAccess {
     @Nullable Particle bcl_addParticle(
             ParticleOptions particleOptions,
@@ -17,4 +14,3 @@ public interface LevelRendererAccess {
             double vx, double vy, double vz
     );
 }
-

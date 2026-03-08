@@ -12,14 +12,13 @@ import org.betterx.wover.loot.api.LootLookupProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -36,8 +35,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
@@ -97,11 +94,13 @@ public abstract class BaseChair extends AbstractChair {
     @Override
     public BlockState updateShape(
             BlockState state,
-            Direction facing,
-            BlockState neighborState,
-            LevelAccessor world,
+            net.minecraft.world.level.LevelReader world,
+            net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess,
             BlockPos pos,
-            BlockPos neighborPos
+            Direction facing,
+            BlockPos neighborPos,
+            BlockState neighborState,
+            net.minecraft.util.RandomSource randomSource
     ) {
         if (state.getValue(TOP)) {
             return world.getBlockState(pos.below()).getBlock() == this ? state : Blocks.AIR.defaultBlockState();
@@ -176,20 +175,19 @@ public abstract class BaseChair extends AbstractChair {
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         BCLModels.createChairBlockModel(generator, this, this.baseMaterial, this.clothMaterial);
     }
 
     @Override
     public LootTable.Builder registerBlockLoot(
-            @NotNull ResourceLocation location,
+            @NotNull Identifier location,
             @NotNull LootLookupProvider provider,
             @NotNull ResourceKey<LootTable> tableKey
     ) {
         var bottomShape = LootItemBlockStatePropertyCondition
                 .hasBlockStateProperties(this)
-                .setProperties(net.minecraft.advancements.critereon.StatePropertiesPredicate.Builder
+                .setProperties(net.minecraft.advancements.criterion.StatePropertiesPredicate.Builder
                         .properties()
                         .hasProperty(TOP, false));
         return LootTable
@@ -202,4 +200,3 @@ public abstract class BaseChair extends AbstractChair {
                 );
     }
 }
-

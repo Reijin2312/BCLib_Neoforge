@@ -3,19 +3,22 @@ package org.betterx.bclib.furniture.entity;
 import org.betterx.bclib.BCLib;
 import org.betterx.bclib.furniture.block.AbstractChair;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.animal.WaterAnimal;
+import net.minecraft.world.entity.animal.fish.WaterAnimal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -55,7 +58,7 @@ public class EntityChair extends Entity {
         );
 
         if (!pushableEntities.isEmpty()) {
-            boolean free = !this.level().isClientSide && !(this.getControllingPassenger() instanceof Player);
+            boolean free = !this.level().isClientSide() && !(this.getControllingPassenger() instanceof Player);
             for (int j = 0; j < pushableEntities.size(); ++j) {
                 Entity entity = pushableEntities.get(j);
                 if (entity.hasPassenger(this)) continue;
@@ -76,12 +79,12 @@ public class EntityChair extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag compoundTag) {
+    protected void readAdditionalSaveData(ValueInput valueInput) {
 
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag compoundTag) {
+    protected void addAdditionalSaveData(ValueOutput valueOutput) {
 
     }
 
@@ -126,7 +129,7 @@ public class EntityChair extends Entity {
             return InteractionResult.PASS;
         }
 
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             return player.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
         }
         return InteractionResult.SUCCESS;
@@ -139,5 +142,10 @@ public class EntityChair extends Entity {
     @Override
     public boolean isPickable() {
         return !this.isRemoved();
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
+        return false;
     }
 }

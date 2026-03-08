@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * NeoForge particle factory registry helper.
  */
-@EventBusSubscriber(modid = BCLib.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = BCLib.MOD_ID, value = Dist.CLIENT)
 public final class ParticleFactoryRegistry {
     public interface PendingParticleFactory<T extends ParticleOptions> {
         ParticleProvider<T> create(SpriteSet sprites);

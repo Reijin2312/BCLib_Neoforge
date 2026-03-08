@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -33,15 +32,15 @@ public class LootUtil {
             BlockState state,
             LootParams.Builder builder
     ) {
-        ResourceKey<LootTable> tableID = block.getLootTable();
-        if (tableID == BuiltInLootTables.EMPTY) {
+        Optional<ResourceKey<LootTable>> tableID = block.getLootTable();
+        if (tableID.isEmpty()) {
             return Optional.empty();
         }
 
         final LootParams ctx = builder.withParameter(LootContextParams.BLOCK_STATE, state)
                                       .create(LootContextParamSets.BLOCK);
         final ServerLevel level = ctx.getLevel();
-        final LootTable table = level.getServer().reloadableRegistries().getLootTable(tableID);
+        final LootTable table = level.getServer().reloadableRegistries().getLootTable(tableID.get());
 
         if (table == LootTable.EMPTY) return Optional.empty();
         return Optional.of(table.getRandomItems(ctx));

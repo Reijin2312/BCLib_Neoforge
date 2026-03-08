@@ -11,8 +11,6 @@ import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseRotatedPillarBlock extends RotatedPillarBlock implements DropSelfLootProvider<BaseRotatedPillarBlock>, BlockModelProvider {
     protected BaseRotatedPillarBlock(Properties settings) {
@@ -24,7 +22,6 @@ public abstract class BaseRotatedPillarBlock extends RotatedPillarBlock implemen
     }
 
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         generator.createRotatedPillar(this);
@@ -72,4 +69,3 @@ public abstract class BaseRotatedPillarBlock extends RotatedPillarBlock implemen
         );
     }
 }
-

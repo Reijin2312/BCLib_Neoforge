@@ -9,10 +9,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
 public class LevelFixErrorScreen extends BCLibLayoutScreen {
     private final String[] errors;
     final Listener onContinue;
@@ -67,9 +64,7 @@ public class LevelFixErrorScreen extends BCLibLayoutScreen {
         return grid;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public interface Listener {
         void doContinue(boolean markFixed);
     }
 }
-

@@ -18,7 +18,7 @@ public class ChunkGeneratorMixin {
     private int bclib_featureIteratorSeed;
 
 
-    @ModifyArg(
+    @ModifyArg(remap = false,
             method = "applyBiomeDecoration",
             at = @At(
                     value = "INVOKE",
@@ -29,7 +29,7 @@ public class ChunkGeneratorMixin {
         return Long.rotateRight(seed, bclib_featureIteratorSeed++);
     }
 
-    @Inject(method = "applyBiomeDecoration", at = @At("HEAD"))
+    @Inject(remap = false, method = "applyBiomeDecoration", at = @At("HEAD"))
     private void bclib_obBiomeGenerate(
             WorldGenLevel worldGenLevel,
             ChunkAccess chunkAccess,
@@ -39,6 +39,3 @@ public class ChunkGeneratorMixin {
         bclib_featureIteratorSeed = 0;
     }
 }
-
-
-

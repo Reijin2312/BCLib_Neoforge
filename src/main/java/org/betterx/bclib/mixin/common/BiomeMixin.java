@@ -7,6 +7,3 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(value = Biome.class)
 public class BiomeMixin {
 }
-
-
-

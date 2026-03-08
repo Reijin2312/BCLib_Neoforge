@@ -5,205 +5,128 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.util.MHelper;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.*;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelDebugName;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.QuadCollection;
+import net.minecraft.client.resources.model.UnbakedGeometry;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.packs.resources.ResourceManager;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.RenderTypeGroup;
+import net.neoforged.neoforge.client.model.AbstractUnbakedModel;
+import net.neoforged.neoforge.client.model.StandardModelParameters;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.joml.Vector3f;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
-import java.util.function.Function;
-import org.jetbrains.annotations.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-@OnlyIn(Dist.CLIENT)
-public class OBJBlockModel implements UnbakedModel, BakedModel {
+public class OBJBlockModel extends AbstractUnbakedModel {
     private static final Vector3f[] POSITIONS = new Vector3f[]{new Vector3f(), new Vector3f(), new Vector3f()};
 
-    protected final Map<Direction, List<UnbakedQuad>> quadsUnbakedMap = Maps.newEnumMap(Direction.class);
-    protected final Map<Direction, List<BakedQuad>> quadsBakedMap = Maps.newEnumMap(Direction.class);
-    protected final List<UnbakedQuad> quadsUnbaked = Lists.newArrayList();
-    protected final List<BakedQuad> quadsBaked = Lists.newArrayList();
-
-    protected TextureAtlasSprite[] sprites;
-    protected ItemTransforms transforms;
-    protected ItemOverrides overrides;
-
-    protected List<Material> materials;
-    protected boolean useCulling;
-    protected boolean useShading;
-    protected byte particleIndex;
+    private final Map<Direction, List<UnbakedQuad>> quadsUnbakedMap = Maps.newEnumMap(Direction.class);
+    private final List<UnbakedQuad> quadsUnbaked = Lists.newArrayList();
+    private final ObjGeometry geometry;
 
     public OBJBlockModel(
-            ResourceLocation location,
+            Identifier location,
             Vector3f offset,
             boolean useCulling,
             boolean useShading,
             byte particleIndex,
-            ResourceLocation... textureIDs
+            Identifier... textureIDs
     ) {
+        super(new StandardModelParameters(
+                null,
+                createTextureSlots(textureIDs, particleIndex),
+                ItemTransforms.NO_TRANSFORMS,
+                Boolean.TRUE,
+                net.minecraft.client.resources.model.UnbakedModel.GuiLight.SIDE,
+                null,
+                RenderTypeGroup.EMPTY,
+                Map.of()
+        ));
+
         for (Direction dir : BlocksHelper.DIRECTIONS) {
             quadsUnbakedMap.put(dir, Lists.newArrayList());
-            quadsBakedMap.put(dir, Lists.newArrayList());
         }
 
-        transforms = ItemTransforms.NO_TRANSFORMS;
-        overrides = ItemOverrides.EMPTY;
-        materials = new ArrayList<>(textureIDs.length);
-        sprites = new TextureAtlasSprite[textureIDs.length];
-        this.particleIndex = particleIndex;
-        this.useCulling = useCulling;
-        this.useShading = useShading;
-        loadModel(location, offset, (byte) (textureIDs.length - 1));
+        loadModel(location, new Vector3f(offset), useCulling, useShading, (byte) (textureIDs.length - 1));
+        this.geometry = new ObjGeometry(textureIDs.length);
+    }
 
+    @Override
+    public UnbakedGeometry geometry() {
+        return geometry;
+    }
+
+    private static TextureSlots.Data createTextureSlots(Identifier[] textureIDs, int particleIndex) {
+        TextureSlots.Data.Builder builder = new TextureSlots.Data.Builder();
         for (int i = 0; i < textureIDs.length; i++) {
-            materials.add(new Material(TextureAtlas.LOCATION_BLOCKS, textureIDs[i]));
+            builder.addTexture(Integer.toString(i), new Material(net.minecraft.client.resources.model.ModelManager.BLOCK_OR_ITEM, textureIDs[i]));
         }
-    }
-
-    // UnbakedModel //
-
-    @Override
-    public Collection<ResourceLocation> getDependencies() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public void resolveParents(Function<ResourceLocation, UnbakedModel> function) {
-    }
-
-    @Nullable
-    @Override
-    public BakedModel bake(
-            ModelBaker modelBaker,
-            Function<Material, TextureAtlasSprite> textureGetter,
-            ModelState modelState
-    ) {
-        for (int i = 0; i < sprites.length; i++) {
-            sprites[i] = textureGetter.apply(materials.get(i));
+        if (textureIDs.length > 0) {
+            int safeParticleIndex = Math.max(0, Math.min(textureIDs.length - 1, particleIndex));
+            builder.addReference("particle", Integer.toString(safeParticleIndex));
         }
-        quadsBaked.clear();
-        quadsUnbaked.forEach(quad -> quadsBaked.add(quad.bake(sprites, modelState)));
-        for (Direction dir : BlocksHelper.DIRECTIONS) {
-            List<UnbakedQuad> unbaked = quadsUnbakedMap.get(dir);
-            List<BakedQuad> baked = quadsBakedMap.get(dir);
-            baked.clear();
-            unbaked.forEach(quad -> baked.add(quad.bake(sprites, modelState)));
-        }
-        return this;
+        return builder.build();
     }
 
-    // Baked Model //
-
-    @Override
-    public List<BakedQuad> getQuads(
-            @Nullable BlockState blockState,
-            @Nullable Direction direction,
-            RandomSource random
-    ) {
-        return direction == null ? quadsBaked : quadsBakedMap.get(direction);
+    private static Resource getResource(ResourceManager resourceManager, Identifier location) {
+        return resourceManager.getResource(location).orElse(null);
     }
 
-    @Override
-    public boolean useAmbientOcclusion() {
-        return true;
-    }
-
-    @Override
-    public boolean isGui3d() {
-        return true;
-    }
-
-    @Override
-    public boolean usesBlockLight() {
-        return true;
-    }
-
-    @Override
-    public boolean isCustomRenderer() {
-        return false;
-    }
-
-    @Override
-    public TextureAtlasSprite getParticleIcon() {
-        return sprites[particleIndex];
-    }
-
-    @Override
-    public ItemTransforms getTransforms() {
-        return transforms;
-    }
-
-    @Override
-    public ItemOverrides getOverrides() {
-        return overrides;
-    }
-
-    private Resource getResource(ResourceLocation location) {
-        return Minecraft.getInstance().getResourceManager().getResource(location).orElse(null);
-    }
-
-    private void loadModel(ResourceLocation location, Vector3f offset, byte maxIndex) {
-        Resource resource = getResource(location);
+    private void loadModel(Identifier location, Vector3f offset, boolean useCulling, boolean useShading, byte maxIndex) {
+        Resource resource = getResource(Minecraft.getInstance().getResourceManager(), location);
         if (resource == null) {
             return;
         }
-        InputStream input = null;
-        try {
-            input = resource.open();
-        } catch (IOException e) {
-            BCLib.LOGGER.error("Unable to load Model", e);
-            throw new RuntimeException(e);
-        }
 
-        List<Float> vertecies = new ArrayList<>(12);
-        List<Float> uvs = new ArrayList<>(8);
+        try (InputStream input = resource.open();
+             InputStreamReader streamReader = new InputStreamReader(input);
+             BufferedReader reader = new BufferedReader(streamReader)) {
 
-        List<Integer> vertexIndex = new ArrayList<>(4);
-        List<Integer> uvIndex = new ArrayList<>(4);
+            List<Float> vertices = new ArrayList<>(12);
+            List<Float> uvs = new ArrayList<>(8);
+            List<Integer> vertexIndex = new ArrayList<>(4);
+            List<Integer> uvIndex = new ArrayList<>(4);
 
-        byte materialIndex = -1;
-
-        try {
-            InputStreamReader streamReader = new InputStreamReader(input);
-            BufferedReader reader = new BufferedReader(streamReader);
-            String string;
-
-            while ((string = reader.readLine()) != null) {
-                if (string.startsWith("usemtl")) {
+            byte materialIndex = -1;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("usemtl")) {
                     materialIndex++;
                     if (materialIndex > maxIndex) {
                         materialIndex = maxIndex;
                     }
-                } else if (string.startsWith("vt")) {
-                    String[] uv = string.split(" ");
+                } else if (line.startsWith("vt")) {
+                    String[] uv = line.split(" ");
                     uvs.add(Float.parseFloat(uv[1]));
                     uvs.add(Float.parseFloat(uv[2]));
-                } else if (string.startsWith("v")) {
-                    String[] vert = string.split(" ");
+                } else if (line.startsWith("v ")) {
+                    String[] vert = line.split(" ");
                     for (int i = 1; i < 4; i++) {
-                        vertecies.add(Float.parseFloat(vert[i]));
+                        vertices.add(Float.parseFloat(vert[i]));
                     }
-                } else if (string.startsWith("f")) {
-                    String[] members = string.split(" ");
+                } else if (line.startsWith("f")) {
+                    String[] members = line.split(" ");
                     if (members.length != 5) {
-                        System.out.println("Only quads in OBJ are supported! Model [" + location + "] has n-gons or triangles!");
+                        BCLib.LOGGER.warn("Only quad faces are supported in OBJ model {}", location);
                         continue;
                     }
                     vertexIndex.clear();
@@ -211,13 +134,14 @@ public class OBJBlockModel implements UnbakedModel, BakedModel {
 
                     for (int i = 1; i < members.length; i++) {
                         String member = members[i];
-
                         if (member.contains("/")) {
                             String[] sub = member.split("/");
-                            vertexIndex.add(Integer.parseInt(sub[0]) - 1); // Vertex
-                            uvIndex.add(Integer.parseInt(sub[1]) - 1);     // UV
+                            vertexIndex.add(Integer.parseInt(sub[0]) - 1);
+                            if (sub.length > 1 && !sub[1].isEmpty()) {
+                                uvIndex.add(Integer.parseInt(sub[1]) - 1);
+                            }
                         } else {
-                            vertexIndex.add(Integer.parseInt(member) - 1); // Vertex
+                            vertexIndex.add(Integer.parseInt(member) - 1);
                         }
                     }
 
@@ -226,19 +150,18 @@ public class OBJBlockModel implements UnbakedModel, BakedModel {
                     for (int i = 0; i < 4; i++) {
                         int index = vertexIndex.get(i) * 3;
                         int quadIndex = i * 5;
-                        quad.addData(quadIndex++, vertecies.get(index++) + offset.x()); // X
-                        quad.addData(quadIndex++, vertecies.get(index++) + offset.y()); // Y
-                        quad.addData(quadIndex++, vertecies.get(index) + offset.z());   // Z
+                        quad.addData(quadIndex++, vertices.get(index++) + offset.x());
+                        quad.addData(quadIndex++, vertices.get(index++) + offset.y());
+                        quad.addData(quadIndex++, vertices.get(index) + offset.z());
                         if (hasUV) {
                             index = uvIndex.get(i) * 2;
-                            quad.addData(quadIndex++, uvs.get(index++) * 16F);   // U
-                            quad.addData(quadIndex, (1 - uvs.get(index)) * 16F); // V
+                            quad.addData(quadIndex++, uvs.get(index++) * 16F);
+                            quad.addData(quadIndex, (1 - uvs.get(index)) * 16F);
                         }
                     }
                     quad.setSpriteIndex(materialIndex);
                     if (useShading) {
-                        Direction dir = getNormalDirection(quad);
-                        quad.setDirection(dir);
+                        quad.setDirection(getNormalDirection(quad));
                         quad.setShading(true);
                     }
                     if (useCulling) {
@@ -254,16 +177,12 @@ public class OBJBlockModel implements UnbakedModel, BakedModel {
                 }
             }
 
-            reader.close();
-            streamReader.close();
-            input.close();
+            if (materialIndex < 0) {
+                quadsUnbaked.forEach(quad -> quad.setSpriteIndex(0));
+                quadsUnbakedMap.values().forEach(list -> list.forEach(quad -> quad.setSpriteIndex(0)));
+            }
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (materialIndex < 0) {
-            quadsUnbaked.forEach(quad -> quad.setSpriteIndex(0));
-            quadsUnbakedMap.values().forEach(list -> list.forEach(quad -> quad.setSpriteIndex(0)));
+            BCLib.LOGGER.error("Unable to load OBJ model {}", location, e);
         }
     }
 
@@ -274,18 +193,17 @@ public class OBJBlockModel implements UnbakedModel, BakedModel {
         dirA.sub(pos);
         dirB.sub(pos);
         pos = MHelper.cross(dirA, dirB);
-        return Direction.getNearest(pos.x(), pos.y(), pos.z());
+        return Direction.getApproximateNearest(pos.x(), pos.y(), pos.z());
     }
 
-    @Nullable
-    private Direction getCullingDirection(UnbakedQuad quad) {
+    private @Nullable Direction getCullingDirection(UnbakedQuad quad) {
         Direction dir = null;
         for (int i = 0; i < 4; i++) {
             Vector3f pos = quad.getPos(i, POSITIONS[0]);
             if (pos.x() < 1 && pos.x() > 0 && pos.y() < 1 && pos.y() > 0 && pos.z() < 1 && pos.z() > 0) {
                 return null;
             }
-            Direction newDir = Direction.getNearest(pos.x() - 0.5F, pos.y() - 0.5F, pos.z() - 0.5F);
+            Direction newDir = Direction.getApproximateNearest(pos.x() - 0.5F, pos.y() - 0.5F, pos.z() - 0.5F);
             if (dir == null) {
                 dir = newDir;
             } else if (newDir != dir) {
@@ -294,5 +212,28 @@ public class OBJBlockModel implements UnbakedModel, BakedModel {
         }
         return dir;
     }
-}
 
+    private class ObjGeometry implements UnbakedGeometry {
+        private final int textureCount;
+
+        private ObjGeometry(int textureCount) {
+            this.textureCount = textureCount;
+        }
+
+        @Override
+        public QuadCollection bake(TextureSlots slots, ModelBaker baker, ModelState state, ModelDebugName debugName) {
+            TextureAtlasSprite[] sprites = new TextureAtlasSprite[Math.max(1, textureCount)];
+            for (int i = 0; i < sprites.length; i++) {
+                sprites[i] = baker.sprites().resolveSlot(slots, Integer.toString(i), debugName);
+            }
+
+            QuadCollection.Builder builder = new QuadCollection.Builder();
+            quadsUnbaked.forEach(quad -> builder.addUnculledFace(quad.bake(sprites, state)));
+            for (Map.Entry<Direction, List<UnbakedQuad>> entry : quadsUnbakedMap.entrySet()) {
+                Direction cullDir = entry.getKey();
+                entry.getValue().forEach(quad -> builder.addCulledFace(cullDir, quad.bake(sprites, state)));
+            }
+            return builder.build();
+        }
+    }
+}

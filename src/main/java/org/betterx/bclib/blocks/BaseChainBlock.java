@@ -10,18 +10,16 @@ import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChainBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class BaseChainBlock extends ChainBlock implements RuntimeBlockModelProvider, RenderLayerProvider, DropSelfLootProvider<BaseChainBlock> {
     public BaseChainBlock(MapColor color) {
-        this(Properties.ofFullCopy(Blocks.CHAIN).mapColor(color));
+        this(Properties.ofFullCopy(Blocks.IRON_CHAIN).mapColor(color));
     }
 
     public BaseChainBlock(BlockBehaviour.Properties properties) {
@@ -38,29 +36,26 @@ public abstract class BaseChainBlock extends ChainBlock implements RuntimeBlockM
 
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation blockId) {
+    public BlockModel getItemModel(Identifier blockId) {
         return ModelsHelper.createItemModel(blockId);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public @Nullable BlockModel getBlockModel(ResourceLocation blockId, BlockState blockState) {
+    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
         Optional<String> pattern = PatternsHelper.createJson(BasePatterns.BLOCK_CHAIN, blockId);
         return ModelsHelper.fromPattern(pattern);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public UnbakedModel getModelVariant(
-            ModelResourceLocation stateId,
+    public BlockStateModel.UnbakedRoot getModelVariant(
+            Identifier stateId,
             BlockState blockState,
-            Map<ResourceLocation, UnbakedModel> modelCache
+            Map<Identifier, UnbakedModel> modelCache
     ) {
         Direction.Axis axis = blockState.getValue(AXIS);
-        ModelResourceLocation modelId = RuntimeBlockModelProvider.remapModelResourceLocation(stateId, blockState);
+        Identifier modelId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState);
         registerBlockModel(stateId, modelId, blockState, modelCache);
-        return ModelsHelper.createRotatedModel(modelId.id(), axis);
+        return ModelsHelper.createRotatedModel(modelId, axis);
     }
 
     @Override
@@ -79,4 +74,3 @@ public abstract class BaseChainBlock extends ChainBlock implements RuntimeBlockM
         }
     }
 }
-

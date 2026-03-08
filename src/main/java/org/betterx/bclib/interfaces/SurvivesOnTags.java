@@ -19,11 +19,11 @@ public interface SurvivesOnTags extends SurvivesOnSpecialGround {
     default String getSurvivableBlocksString() {
         return getSurvivableTags()
                 .stream()
-                .map(tag -> BuiltInRegistries.BLOCK.getTag(tag))
+                .map(tag -> BuiltInRegistries.BLOCK.get(tag))
                 .filter(named -> named.isPresent())
                 .map(named -> named.get())
                 .flatMap(named -> named.stream())
-                .filter(block -> block != Blocks.AIR && block != null)
+                .filter(block -> block != null && block.value() != Blocks.AIR)
                 .map(block -> {
                     ItemStack stack = new ItemStack(block.value());
                     if (stack.has(DataComponents.CUSTOM_NAME)) return stack.getHoverName().getString();

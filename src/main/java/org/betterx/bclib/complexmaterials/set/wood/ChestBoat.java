@@ -12,7 +12,7 @@ import org.betterx.wover.tag.api.predefined.CommonItemTags;
 
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -49,7 +49,7 @@ public class ChestBoat extends SimpleMaterialSlot<WoodenComplexMaterial> {
     }
 
     @Override
-    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, ResourceLocation id) {
+    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, Identifier id) {
         makeChestBoatRecipe(context, id, parentMaterial.getItem(WoodSlots.BOAT), parentMaterial.getItem(WoodSlots.CHEST_BOAT));
     }
 
@@ -58,7 +58,7 @@ public class ChestBoat extends SimpleMaterialSlot<WoodenComplexMaterial> {
         parentMaterial.initBoatType();
     }
 
-    public static void makeChestBoatRecipe(RecipeOutput context, ResourceLocation id, Item boat, Item chestBoat) {
+    public static void makeChestBoatRecipe(RecipeOutput context, Identifier id, Item boat, Item chestBoat) {
         CraftingRecipeBuilder craftingRecipeBuilder = RecipeBuilder
                 .crafting(id, chestBoat)
                 .shapeless()

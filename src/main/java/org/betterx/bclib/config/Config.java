@@ -2,7 +2,6 @@ package org.betterx.bclib.config;
 
 import org.betterx.bclib.BCLib;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;

@@ -39,7 +39,7 @@ public class BCLibArguments {
 
     private static <T extends ArgumentType<?>> void register(
             RegisterEvent.RegisterHelper<ArgumentTypeInfo<?, ?>> helper,
-            net.minecraft.resources.ResourceLocation id,
+            net.minecraft.resources.Identifier id,
             Class<T> type,
             ArgumentTypeInfo<T, ?> info
     ) {

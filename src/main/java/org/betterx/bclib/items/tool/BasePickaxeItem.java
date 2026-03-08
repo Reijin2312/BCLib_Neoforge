@@ -4,26 +4,22 @@ import org.betterx.bclib.client.models.ModelsHelper;
 import org.betterx.bclib.interfaces.ItemModelProvider;
 
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.Tier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ToolMaterial;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-public class BasePickaxeItem extends PickaxeItem implements ItemModelProvider {
-    public BasePickaxeItem(Tier material, int attackDamage, float attackSpeed, Properties settings) {
-        this(material, settings.attributes(PickaxeItem.createAttributes(material, attackDamage, attackSpeed)));
+public class BasePickaxeItem extends Item implements ItemModelProvider {
+    public BasePickaxeItem(ToolMaterial material, int attackDamage, float attackSpeed, Properties settings) {
+        super(settings.pickaxe(material, attackDamage, attackSpeed));
     }
 
-    public BasePickaxeItem(Tier material, Properties settings) {
-        super(material, settings);
+    public BasePickaxeItem(ToolMaterial material, Properties settings) {
+        this(material, 1, -2.8F, settings);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation resourceLocation) {
+    public BlockModel getItemModel(Identifier resourceLocation) {
         return ModelsHelper.createHandheldItem(resourceLocation);
     }
 }
-

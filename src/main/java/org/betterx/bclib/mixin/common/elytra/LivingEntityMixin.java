@@ -13,17 +13,17 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(value = LivingEntity.class, priority = 199)
+@Mixin(value = net.minecraft.world.entity.LivingEntity.class, priority = 199)
 public abstract class LivingEntityMixin {
-
     @Shadow
     public abstract ItemStack getItemBySlot(EquipmentSlot equipmentSlot);
 
-    // require=0 makes this optional if the signature shifts; prevents hard crash in runtime mapping drift
-    @ModifyVariable(method = "travel", at = @At("HEAD"), argsOnly = true, require = 0)
+    @ModifyVariable(remap = false, method = "travel", at = @At("HEAD"), argsOnly = true, require = 0)
     private Vec3 bclib_adjustTravelInput(Vec3 moveDelta) {
         LivingEntity self = (LivingEntity) (Object) this;
-        if (!self.isFallFlying()) return moveDelta;
+        if (!self.isFallFlying()) {
+            return moveDelta;
+        }
 
         ItemStack itemStack = BCLElytraUtils.slotProvider == null
                 ? getItemBySlot(EquipmentSlot.CHEST)
@@ -37,6 +37,3 @@ public abstract class LivingEntityMixin {
         return moveDelta;
     }
 }
-
-
-

@@ -7,7 +7,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
@@ -19,7 +19,7 @@ public class Noises {
     public static final ResourceKey<NormalNoise.NoiseParameters> ROUGHNESS_NOISE = createKey(BCLib.makeID(
             "roughness_noise"));
 
-    public static ResourceKey<NormalNoise.NoiseParameters> createKey(ResourceLocation loc) {
+    public static ResourceKey<NormalNoise.NoiseParameters> createKey(Identifier loc) {
         return ResourceKey.create(Registries.NOISE, loc);
     }
 
@@ -28,7 +28,7 @@ public class Noises {
             RandomSource randomSource,
             ResourceKey<NormalNoise.NoiseParameters> resourceKey
     ) {
-        Holder<NormalNoise.NoiseParameters> holder = registry.getHolderOrThrow(resourceKey);
+        Holder<NormalNoise.NoiseParameters> holder = registry.getOrThrow(resourceKey);
         return NormalNoise.create(randomSource, holder.value());
     }
 
@@ -37,7 +37,7 @@ public class Noises {
             RandomSource randomSource,
             ResourceKey<NormalNoise.NoiseParameters> noise
     ) {
-        final Registry<NormalNoise.NoiseParameters> registry = registryAccess.registryOrThrow(Registries.NOISE);
+        final Registry<NormalNoise.NoiseParameters> registry = registryAccess.lookupOrThrow(Registries.NOISE);
         return noiseIntances.computeIfAbsent(noise, (key) -> createNoise(registry, randomSource, noise));
     }
 }

@@ -35,6 +35,3 @@ public class PlacementContextMixin implements org.betterx.bclib.interfaces.BCLPl
         this.bcl_mirror = bcl_mirror;
     }
 }
-
-
-

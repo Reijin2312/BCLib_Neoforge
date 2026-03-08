@@ -19,7 +19,7 @@ public class BlockStateIdCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> register(LiteralArgumentBuilder<CommandSourceStack> bnContext) {
         return bnContext
                 .then(Commands.literal("blockstate_id")
-                              .requires(source -> source.hasPermission(Commands.LEVEL_OWNERS))
+                              .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
                               .then(Commands.argument("id", IntegerArgumentType.integer(0))
                                             .executes(BlockStateIdCommand::printBlockState)
                               )

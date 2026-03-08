@@ -2,10 +2,7 @@ package org.betterx.bclib.mixin.client;
 
 import org.betterx.bclib.client.BCLibClient;
 
-import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,24 +12,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-@Mixin(value = ModelManager.class)
+@Mixin(value = net.minecraft.client.resources.model.ModelManager.class)
 public class ModelManagerMixin {
-    @Inject(
-            method = "reload",
-            at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/util/profiling/ProfilerFiller;startTick()V")
-    )
+    // Stable hook; custom runtime models only need the resource manager snapshot.
+    @Inject(remap = false, method = "reload", at = @At("HEAD"), require = 0)
     private void bclib_loadCustomModels(
-            PreparableReloadListener.PreparationBarrier preparationBarrier,
-            ResourceManager resourceManager,
-            ProfilerFiller profilerFiller,
-            ProfilerFiller profilerFiller2,
+            PreparableReloadListener.SharedState sharedState,
             Executor executor,
+            PreparableReloadListener.PreparationBarrier preparationBarrier,
             Executor executor2,
             CallbackInfoReturnable<CompletableFuture<Void>> cir
     ) {
-        BCLibClient.lazyModelbakery().loadCustomModels(resourceManager);
+        BCLibClient.lazyModelbakery().loadCustomModels(sharedState.resourceManager());
     }
 }
-
-
-

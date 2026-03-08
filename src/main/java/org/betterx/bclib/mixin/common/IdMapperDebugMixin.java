@@ -3,7 +3,7 @@ package org.betterx.bclib.mixin.common;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.betterx.bclib.BCLib;
@@ -31,7 +31,7 @@ public class IdMapperDebugMixin<T> {
     @Shadow
     protected int nextId;
 
-    @Inject(method = "addMapping", at = @At("HEAD"), cancellable = true)
+    @Inject(remap = false, method = "addMapping", at = @At("HEAD"), cancellable = true)
     private void bclib_logDuplicate(T value, int id, CallbackInfo ci) {
         if (!(value instanceof BlockState state)) {
             return;
@@ -85,7 +85,7 @@ public class IdMapperDebugMixin<T> {
     }
 
     private static void logRemap(BlockState state, int oldId, int newId) {
-        ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        Identifier key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
         String name = key == null ? "unknown" : key.toString();
         BCLib.LOGGER.error(
                 "BlockState remapped: " + name + " oldId=" + oldId + " newId=" + newId,
@@ -94,8 +94,8 @@ public class IdMapperDebugMixin<T> {
     }
 
     private static void logOverwrite(BlockState state, BlockState other, int id) {
-        ResourceLocation currentKey = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        ResourceLocation otherKey = BuiltInRegistries.BLOCK.getKey(other.getBlock());
+        Identifier currentKey = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        Identifier otherKey = BuiltInRegistries.BLOCK.getKey(other.getBlock());
         String currentName = currentKey == null ? "unknown" : currentKey.toString();
         String otherName = otherKey == null ? "unknown" : otherKey.toString();
         BCLib.LOGGER.error(

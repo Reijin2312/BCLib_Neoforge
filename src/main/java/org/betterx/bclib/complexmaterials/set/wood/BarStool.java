@@ -11,7 +11,7 @@ import org.betterx.wover.recipe.api.RecipeBuilder;
 
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -25,7 +25,7 @@ public class BarStool extends SimpleMaterialSlot<WoodenComplexMaterial> {
         super("bar_stool");
     }
 
-    public static void makeBarStoolRecipe(RecipeOutput context, ResourceLocation id, Block barStool, Block planks) {
+    public static void makeBarStoolRecipe(RecipeOutput context, Identifier id, Block barStool, Block planks) {
         CraftingRecipeBuilder craftingRecipeBuilder1 = RecipeBuilder.crafting(id, barStool);
         CraftingRecipeBuilder craftingRecipeBuilder = craftingRecipeBuilder1.shape("##", "II", "II")
                                                                             .addMaterial('#', planks)
@@ -48,7 +48,7 @@ public class BarStool extends SimpleMaterialSlot<WoodenComplexMaterial> {
     }
 
     @Override
-    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, ResourceLocation id) {
+    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, Identifier id) {
         BarStool.makeBarStoolRecipe(context, id, parentMaterial.getBlock(suffix), parentMaterial.getBlock(WoodSlots.SLAB));
     }
 }

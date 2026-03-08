@@ -17,7 +17,7 @@ public class WorldGenRegionMixin {
     @Shadow
     private ChunkAccess center;
 
-    @Inject(method = "ensureCanWrite", at = @At("HEAD"), cancellable = true)
+    @Inject(remap = false, method = "ensureCanWrite", at = @At("HEAD"), cancellable = true)
     private void be_alterBlockCheck(BlockPos blockPos, CallbackInfoReturnable<Boolean> info) {
         int x = blockPos.getX() >> 4;
         int z = blockPos.getZ() >> 4;
@@ -25,6 +25,3 @@ public class WorldGenRegionMixin {
         info.setReturnValue(Math.abs(x - center.getPos().x) < 2 && Math.abs(z - center.getPos().z) < 2);
     }
 }
-
-
-

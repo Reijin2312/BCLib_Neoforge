@@ -10,7 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -35,16 +35,16 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 public class StructureNBT {
-    public final ResourceLocation location;
+    public final Identifier location;
     protected StructureTemplate structure;
 
 
-    protected StructureNBT(ResourceLocation location) {
+    protected StructureNBT(Identifier location) {
         this.location = location;
         this.structure = readStructureFromJar(location);
     }
 
-    protected StructureNBT(ResourceLocation location, StructureTemplate structure) {
+    protected StructureNBT(Identifier location, StructureTemplate structure) {
         this.location = location;
         this.structure = structure;
     }
@@ -57,9 +57,9 @@ public class StructureNBT {
         return Mirror.values()[random.nextInt(3)];
     }
 
-    private static final Map<ResourceLocation, StructureNBT> STRUCTURE_CACHE = Maps.newHashMap();
+    private static final Map<Identifier, StructureNBT> STRUCTURE_CACHE = Maps.newHashMap();
 
-    public static StructureNBT create(ResourceLocation location) {
+    public static StructureNBT create(Identifier location) {
         return STRUCTURE_CACHE.computeIfAbsent(location, r -> new StructureNBT(r));
     }
 
@@ -107,17 +107,17 @@ public class StructureNBT {
         return pos.offset(-blockpos2.getX() >> 1, 0, -blockpos2.getZ() >> 1);
     }
 
-    private static final Map<ResourceLocation, StructureTemplate> READER_CACHE = Maps.newHashMap();
+    private static final Map<Identifier, StructureTemplate> READER_CACHE = Maps.newHashMap();
 
-    private static StructureTemplate readStructureFromJar(ResourceLocation resource) {
+    private static StructureTemplate readStructureFromJar(Identifier resource) {
         return READER_CACHE.computeIfAbsent(resource, r -> _readStructureFromJar(r));
     }
 
-    private static String getStructurePath(ResourceLocation resource) {
+    private static String getStructurePath(Identifier resource) {
         return "data/" + resource.getNamespace() + "/structure/" + resource.getPath();
     }
 
-    private static StructureTemplate _readStructureFromJar(ResourceLocation resource) {
+    private static StructureTemplate _readStructureFromJar(Identifier resource) {
         try (InputStream inputstream = openStructureStream(resource)) {
             if (inputstream == null) {
                 BCLib.LOGGER.error("Structure not found: " + getStructurePath(resource) + ".nbt");
@@ -131,7 +131,7 @@ public class StructureNBT {
         return null;
     }
 
-    private static InputStream openStructureStream(ResourceLocation resource) {
+    private static InputStream openStructureStream(Identifier resource) {
         String path = getStructurePath(resource) + ".nbt";
         ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
         if (contextLoader != null) {
@@ -167,7 +167,7 @@ public class StructureNBT {
      * @param recursionDepth The maximum recursion depth or 0 to indicate no limitation
      * @return A list of all structures found at the given resource location.
      */
-    public static List<StructureNBT> createResourcesFrom(ResourceLocation resource, int recursionDepth) {
+    public static List<StructureNBT> createResourcesFrom(Identifier resource, int recursionDepth) {
         String ns = resource.getNamespace();
         String nm = resource.getPath();
 
@@ -212,11 +212,11 @@ public class StructureNBT {
                                     }
                                 })
                                 .filter(s -> s.endsWith(".nbt"))
-                                .map(s -> ResourceLocation.fromNamespaceAndPath(
+                                .map(s -> Identifier.fromNamespaceAndPath(
                                         ns,
                                         (nm.isEmpty() ? "" : (nm + "/")) + s.substring(0, s.length() - 4)
                                 ))
-                                .sorted(Comparator.comparing(ResourceLocation::toString))
+                                .sorted(Comparator.comparing(Identifier::toString))
                                 .map(r -> {
                                     BCLib.LOGGER.info("Loading Structure: " + r);
                                     try {
@@ -241,7 +241,7 @@ public class StructureNBT {
 
         StructureTemplate template = new StructureTemplate();
 
-        template.load(BuiltInRegistries.BLOCK.asLookup(), nbttagcompound);
+        template.load(BuiltInRegistries.BLOCK, nbttagcompound);
 
         return template;
     }

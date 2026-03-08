@@ -1,6 +1,6 @@
 package org.betterx.bclib.mixin.common;
 
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.biome.MobSpawnSettings.SpawnerData;
@@ -14,12 +14,9 @@ import java.util.Map;
 @Mixin(value = MobSpawnSettings.class)
 public interface MobSpawnSettingsAccessor {
     @Accessor(value = "spawners")
-    Map<MobCategory, WeightedRandomList<SpawnerData>> bcl_getSpawners();
+    Map<MobCategory, WeightedList<SpawnerData>> bcl_getSpawners();
 
     @Accessor(value = "spawners")
     @Mutable
-    void bcl_setSpawners(Map<MobCategory, WeightedRandomList<SpawnerData>> spawners);
+    void bcl_setSpawners(Map<MobCategory, WeightedList<SpawnerData>> spawners);
 }
-
-
-

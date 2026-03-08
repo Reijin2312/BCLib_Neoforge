@@ -3,7 +3,7 @@ package org.betterx.bclib.api.v3.bonemeal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
@@ -58,7 +58,7 @@ abstract class BlockSpreader implements BonemealBlockSpreader {
             }
         }
 
-        SimpleWeightedRandomList.Builder<BlockState> builder = new SimpleWeightedRandomList.Builder<>();
+        WeightedList.Builder<BlockState> builder = new WeightedList.Builder<>();
         for (Map.Entry<BlockState, Integer> e : sourceBlocks.entrySet()) {
             builder.add(e.getKey(), e.getValue());
         }

@@ -6,15 +6,14 @@ import org.betterx.bclib.client.models.PatternsHelper;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 import org.betterx.wover.block.api.BlockProperties.TripleShape;
 
+import com.mojang.math.Quadrant;
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.MultiVariant;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.block.model.Variant;
-import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
@@ -30,12 +29,10 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -120,18 +117,16 @@ public class TripleTerrainBlock extends BaseTerrainBlock implements RuntimeBlock
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation blockId) {
+    public BlockModel getItemModel(Identifier blockId) {
         return getBlockModel(blockId, defaultBlockState());
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public @Nullable BlockModel getBlockModel(ResourceLocation blockId, BlockState blockState) {
+    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
         String path = blockId.getPath();
         Optional<String> pattern;
         if (isMiddle(blockState)) {
-            ResourceLocation topId = ResourceLocation.fromNamespaceAndPath(blockId.getNamespace(), path + "_top");
+            Identifier topId = Identifier.fromNamespaceAndPath(blockId.getNamespace(), path + "_top");
             pattern = PatternsHelper.createBlockSimple(topId);
         } else {
             Map<String, String> textures = Maps.newHashMap();
@@ -144,40 +139,52 @@ public class TripleTerrainBlock extends BaseTerrainBlock implements RuntimeBlock
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public UnbakedModel getModelVariant(
-            ModelResourceLocation stateId,
+    public BlockStateModel.UnbakedRoot getModelVariant(
+            Identifier stateId,
             BlockState blockState,
-            Map<ResourceLocation, UnbakedModel> modelCache
+            Map<Identifier, UnbakedModel> modelCache
     ) {
         boolean isMiddle = isMiddle(blockState);
         String middle = isMiddle ? "_middle" : "";
-        ModelResourceLocation modelId = RuntimeBlockModelProvider.remapModelResourceLocation(stateId, blockState, middle);
+        Identifier modelId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, middle);
         registerBlockModel(stateId, modelId, blockState, modelCache);
         if (isMiddle) {
-            List<Variant> variants = Lists.newArrayList();
-            for (BlockModelRotation rotation : BlockModelRotation.values()) {
-                variants.add(new Variant(modelId.id(), rotation.getRotation(), false, 1));
+            List<Variant> variants = new ArrayList<>(16);
+            for (Quadrant xRot : ROTATIONS) {
+                for (Quadrant yRot : ROTATIONS) {
+                    Variant variant = new Variant(modelId);
+                    if (xRot != Quadrant.R0) {
+                        variant = variant.withXRot(xRot);
+                    }
+                    if (yRot != Quadrant.R0) {
+                        variant = variant.withYRot(yRot);
+                    }
+                    variants.add(variant);
+                }
             }
-            return new MultiVariant(variants);
+            return ModelsHelper.createVariants(variants);
         } else if (blockState.getValue(SHAPE) == TripleShape.TOP) {
-            return new MultiVariant(Lists.newArrayList(
-                    new Variant(
-                            modelId.id(),
-                            BlockModelRotation.X180_Y0.getRotation(),
-                            false,
-                            1
-                    ),
-                    new Variant(modelId.id(), BlockModelRotation.X180_Y90.getRotation(), false, 1),
-                    new Variant(modelId.id(), BlockModelRotation.X180_Y180.getRotation(), false, 1),
-                    new Variant(modelId.id(), BlockModelRotation.X180_Y270.getRotation(), false, 1)
-            ));
+            List<Variant> variants = new ArrayList<>(4);
+            for (Quadrant yRot : ROTATIONS) {
+                Variant variant = new Variant(modelId).withXRot(Quadrant.R180);
+                if (yRot != Quadrant.R0) {
+                    variant = variant.withYRot(yRot);
+                }
+                variants.add(variant);
+            }
+            return ModelsHelper.createVariants(variants);
         }
-        return ModelsHelper.createRandomTopModel(modelId.id());
+        return ModelsHelper.createRandomTopModel(modelId);
     }
+
+    private static final Quadrant[] ROTATIONS = {
+            Quadrant.R0,
+            Quadrant.R90,
+            Quadrant.R180,
+            Quadrant.R270
+    };
 
     protected boolean isMiddle(BlockState blockState) {
         return blockState.is(this) && blockState.getValue(SHAPE) == TripleShape.MIDDLE;
     }
 }
-

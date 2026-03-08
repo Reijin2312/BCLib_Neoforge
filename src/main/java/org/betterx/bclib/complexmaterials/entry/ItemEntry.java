@@ -25,7 +25,13 @@ public class ItemEntry extends ComplexMaterialEntry {
 
     public Item init(ComplexMaterial material, Item.Properties itemSettings, ItemRegistry registry) {
         String location = getName(material.getBaseName());
-        Item item = initFunction.apply(material, itemSettings);
+        registry.prepareConstructionPath(location);
+        Item item;
+        try {
+            item = initFunction.apply(material, itemSettings);
+        } finally {
+            registry.finishConstructionPath();
+        }
         if (itemTags == null)
             registry.register(location, item);
         else

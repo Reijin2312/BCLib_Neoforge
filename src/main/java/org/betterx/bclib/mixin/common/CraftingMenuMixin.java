@@ -21,7 +21,7 @@ public abstract class CraftingMenuMixin {
     @Shadow
     private ContainerLevelAccess access;
 
-    @Inject(method = "stillValid", at = @At("HEAD"), cancellable = true)
+    @Inject(remap = false, method = "stillValid", at = @At("HEAD"), cancellable = true)
     private void bclib_stillValid(Player player, CallbackInfoReturnable<Boolean> info) {
         if (access.evaluate((world, pos) -> {
             BlockState state = world.getBlockState(pos);
@@ -31,6 +31,3 @@ public abstract class CraftingMenuMixin {
         }
     }
 }
-
-
-

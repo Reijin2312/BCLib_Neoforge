@@ -5,7 +5,6 @@ import org.betterx.bclib.blockentities.BaseBarrelBlockEntity;
 import org.betterx.bclib.blockentities.BaseChestBlockEntity;
 import org.betterx.bclib.blockentities.BaseFurnaceBlockEntity;
 import org.betterx.bclib.blockentities.DynamicBlockEntityType;
-import org.betterx.bclib.blockentities.DynamicBlockEntityType.BlockEntitySupplier;
 import org.betterx.bclib.blocks.BaseBarrelBlock;
 import org.betterx.bclib.blocks.BaseChestBlock;
 import org.betterx.bclib.blocks.BaseFurnaceBlock;
@@ -14,20 +13,19 @@ import org.betterx.bclib.furniture.entity.EntityChair;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 import net.neoforged.neoforge.registries.RegisterEvent;
 
 public class BaseBlockEntities {
-    private static final ResourceLocation CHEST_ID = BCLib.makeID("chest");
-    private static final ResourceLocation BARREL_ID = BCLib.makeID("barrel");
-    private static final ResourceLocation FURNACE_ID = BCLib.makeID("furnace");
-    private static final ResourceLocation CHAIR_ID = BCLib.makeID("chair");
+    private static final Identifier CHEST_ID = BCLib.makeID("chest");
+    private static final Identifier BARREL_ID = BCLib.makeID("barrel");
+    private static final Identifier FURNACE_ID = BCLib.makeID("furnace");
+    private static final Identifier CHAIR_ID = BCLib.makeID("chair");
 
     public static DynamicBlockEntityType<BaseChestBlockEntity> CHEST;
     public static DynamicBlockEntityType<BaseBarrelBlockEntity> BARREL;
@@ -60,7 +58,7 @@ public class BaseBlockEntities {
                         .sized(0.5F, 0.8F)
                         .fireImmune()
                         .noSummon()
-                        .build(CHAIR_ID.toString());
+                        .build(ResourceKey.create(Registries.ENTITY_TYPE, CHAIR_ID));
                 helper.register(CHAIR_ID, CHAIR);
             });
         }

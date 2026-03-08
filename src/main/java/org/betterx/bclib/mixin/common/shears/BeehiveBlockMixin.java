@@ -18,12 +18,10 @@ public class BeehiveBlockMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"
-            )
+            ),
+            remap = false
     )
     private boolean bclib_isShears(ItemStack stack, ItemAbility ability, Operation<Boolean> original) {
         return original.call(stack, ability) || BaseShearsItem.isShear(stack);
     }
 }
-
-
-

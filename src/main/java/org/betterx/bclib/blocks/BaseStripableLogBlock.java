@@ -7,7 +7,7 @@ import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Block;
@@ -42,7 +42,7 @@ public abstract class BaseStripableLogBlock extends BaseRotatedPillarBlock imple
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(BlockTags.LOGS, this);
             if (flammable) {
                 context.add(BlockTags.LOGS_THAT_BURN, this);
@@ -50,7 +50,7 @@ public abstract class BaseStripableLogBlock extends BaseRotatedPillarBlock imple
         }
 
         @Override
-        public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+        public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
             context.add(ItemTags.LOGS, this);
             if (flammable) {
                 context.add(ItemTags.LOGS_THAT_BURN, this);

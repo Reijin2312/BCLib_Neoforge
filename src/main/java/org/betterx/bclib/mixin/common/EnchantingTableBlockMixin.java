@@ -16,7 +16,7 @@ public abstract class EnchantingTableBlockMixin extends Block {
         super(settings);
     }
 
-    @Inject(
+    @Inject(remap = false,
             method = "isValidBookShelf(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Z",
             at = @At("HEAD"),
             cancellable = true
@@ -35,6 +35,3 @@ public abstract class EnchantingTableBlockMixin extends Block {
         }
     }
 }
-
-
-

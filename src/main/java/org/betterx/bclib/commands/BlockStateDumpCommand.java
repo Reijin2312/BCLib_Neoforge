@@ -43,14 +43,14 @@ public class BlockStateDumpCommand {
     ) {
         return bnContext
                 .then(Commands.literal("blockstate_dump")
-                              .requires(source -> source.hasPermission(Commands.LEVEL_OWNERS))
+                              .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
                               .executes(ctx -> dump(ctx, DEFAULT_SAMPLE))
                               .then(Commands.argument("count", IntegerArgumentType.integer(1, MAX_SAMPLE))
                                             .executes(ctx -> dump(ctx, IntegerArgumentType.getInteger(ctx, "count")))
                               )
                 )
                 .then(Commands.literal("blockstate_dump_range")
-                              .requires(source -> source.hasPermission(Commands.LEVEL_OWNERS))
+                              .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
                               .then(Commands.argument("start", IntegerArgumentType.integer(0))
                                             .then(Commands.argument("count", IntegerArgumentType.integer(1, MAX_DUMP_RANGE))
                                                           .executes(ctx -> dumpRange(
@@ -62,7 +62,7 @@ public class BlockStateDumpCommand {
                               )
                 )
                 .then(Commands.literal("blockstate_hash")
-                              .requires(source -> source.hasPermission(Commands.LEVEL_OWNERS))
+                              .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
                               .then(Commands.argument("start", IntegerArgumentType.integer(0))
                                             .then(Commands.argument("count", IntegerArgumentType.integer(1))
                                                           .executes(ctx -> hashRangeCommand(
@@ -74,7 +74,7 @@ public class BlockStateDumpCommand {
                               )
                 )
                 .then(Commands.literal("blockstate_dump_file")
-                              .requires(source -> source.hasPermission(Commands.LEVEL_OWNERS))
+                              .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
                               .executes(ctx -> dumpFile(ctx, null))
                               .then(Commands.argument("name", StringArgumentType.word())
                                             .executes(ctx -> dumpFile(

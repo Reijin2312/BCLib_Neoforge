@@ -20,14 +20,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = BoneMealItem.class)
 public class BoneMealItemMixin {
-    @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
+    private static InteractionResult bclibSidedSuccess(Level level) {
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+    }
+
+    @Inject(remap = false, method = "useOn", at = @At("HEAD"), cancellable = true)
     private void bclib_onUse(UseOnContext context, CallbackInfoReturnable<InteractionResult> info) {
         Level level = context.getLevel();
         final BlockPos blockPos = context.getClickedPos();
 
         if (context.getPlayer().isCreative()) {
             if (BonemealAPI.INSTANCE.runSpreaders(context.getItemInHand(), level, blockPos, true)) {
-                info.setReturnValue(InteractionResult.sidedSuccess(level.isClientSide));
+                info.setReturnValue(bclibSidedSuccess(level));
             }
 
             final BlockState blockState = level.getBlockState(blockPos);
@@ -36,12 +40,12 @@ public class BoneMealItemMixin {
                     && blockState.getBlock() instanceof FeatureSaplingBlock<?, ?>
             ) {
                 bblock.performBonemeal(server, context.getLevel().getRandom(), blockPos, blockState);
-                info.setReturnValue(InteractionResult.sidedSuccess(level.isClientSide));
+                info.setReturnValue(bclibSidedSuccess(level));
             }
         }
     }
 
-    @Inject(method = "growCrop", at = @At("HEAD"), cancellable = true)
+    @Inject(remap = false, method = "growCrop", at = @At("HEAD"), cancellable = true)
     private static void bcl_growCrop(
             ItemStack itemStack,
             Level level,
@@ -53,6 +57,3 @@ public class BoneMealItemMixin {
         }
     }
 }
-
-
-

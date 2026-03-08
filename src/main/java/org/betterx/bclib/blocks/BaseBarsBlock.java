@@ -8,13 +8,13 @@ import org.betterx.bclib.client.render.BCLRenderLayer;
 import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 
+import com.mojang.math.Quadrant;
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.IronBarsBlock;
@@ -22,8 +22,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +45,7 @@ public abstract class BaseBarsBlock extends IronBarsBlock implements RuntimeBloc
     }
 
     public Optional<String> getModelString(String block) {
-        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(this);
+        Identifier blockId = BuiltInRegistries.BLOCK.getKey(this);
         if (block.contains("item")) {
             return PatternsHelper.createJson(BasePatterns.ITEM_BLOCK, blockId);
         }
@@ -59,15 +57,13 @@ public abstract class BaseBarsBlock extends IronBarsBlock implements RuntimeBloc
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation resourceLocation) {
+    public BlockModel getItemModel(Identifier resourceLocation) {
         return ModelsHelper.createBlockItem(resourceLocation);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public @Nullable BlockModel getBlockModel(ResourceLocation blockId, BlockState blockState) {
-        ResourceLocation thisId = BuiltInRegistries.BLOCK.getKey(this);
+    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
+        Identifier thisId = BuiltInRegistries.BLOCK.getKey(this);
         String path = blockId.getPath();
         Optional<String> pattern = Optional.empty();
         if (path.endsWith("_post")) {
@@ -80,43 +76,41 @@ public abstract class BaseBarsBlock extends IronBarsBlock implements RuntimeBloc
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public UnbakedModel getModelVariant(
-            ModelResourceLocation stateId,
+    public BlockStateModel.UnbakedRoot getModelVariant(
+            Identifier stateId,
             BlockState blockState,
-            Map<ResourceLocation, UnbakedModel> modelCache
+            Map<Identifier, UnbakedModel> modelCache
     ) {
-        ModelResourceLocation postId = RuntimeBlockModelProvider.remapModelResourceLocation(stateId, blockState, "_post");
-        ModelResourceLocation sideId = RuntimeBlockModelProvider.remapModelResourceLocation(stateId, blockState, "_side");
+        Identifier postId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, "_post");
+        Identifier sideId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, "_side");
         registerBlockModel(postId, postId, blockState, modelCache);
         registerBlockModel(sideId, sideId, blockState, modelCache);
 
         ModelsHelper.MultiPartBuilder builder = ModelsHelper.MultiPartBuilder.create(stateDefinition);
-        builder.part(postId.id())
+        builder.part(postId)
                .setCondition(state -> !state.getValue(NORTH) && !state.getValue(EAST) && !state.getValue(SOUTH) && !state
                        .getValue(WEST))
                .add();
-        builder.part(sideId.id()).setCondition(state -> state.getValue(NORTH)).setUVLock(true).add();
-        builder.part(sideId.id())
+        builder.part(sideId).setCondition(state -> state.getValue(NORTH)).setUVLock(true).add();
+        builder.part(sideId)
                .setCondition(state -> state.getValue(EAST))
-               .setTransformation(BlockModelRotation.X0_Y90.getRotation())
+               .setYRotation(Quadrant.R90)
                .setUVLock(true)
                .add();
-        builder.part(sideId.id())
+        builder.part(sideId)
                .setCondition(state -> state.getValue(SOUTH))
-               .setTransformation(BlockModelRotation.X0_Y180.getRotation())
+               .setYRotation(Quadrant.R180)
                .setUVLock(true)
                .add();
-        builder.part(sideId.id())
+        builder.part(sideId)
                .setCondition(state -> state.getValue(WEST))
-               .setTransformation(BlockModelRotation.X0_Y270.getRotation())
+               .setYRotation(Quadrant.R270)
                .setUVLock(true)
                .add();
 
         return builder.build();
     }
 
-    @OnlyIn(Dist.CLIENT)
     public boolean skipRendering(BlockState state, BlockState stateFrom, Direction direction) {
         if (direction.getAxis().isVertical() && stateFrom.getBlock() == this && !stateFrom.equals(state)) {
             return false;
@@ -140,4 +134,3 @@ public abstract class BaseBarsBlock extends IronBarsBlock implements RuntimeBloc
         }
     }
 }
-

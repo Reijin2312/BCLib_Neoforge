@@ -7,26 +7,23 @@ import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.data.models.model.TextureMapping;
-import net.minecraft.data.models.model.TextureSlot;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Block;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseBarkBlock extends BaseRotatedPillarBlock {
     protected BaseBarkBlock(Properties settings) {
         super(settings);
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         var res = TextureMapping.getBlockTexture(this);
-        var log = ResourceLocation.fromNamespaceAndPath(res.getNamespace(), res
+        var log = Identifier.fromNamespaceAndPath(res.getNamespace(), res
                 .getPath()
                 .replace("_bark", "_log"));
         generator.createRotatedPillar(this, new TextureMapping()
@@ -44,7 +41,7 @@ public abstract class BaseBarkBlock extends BaseRotatedPillarBlock {
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(BlockTags.LOGS, this);
             if (flammable) {
                 context.add(BlockTags.LOGS_THAT_BURN, this);
@@ -52,7 +49,7 @@ public abstract class BaseBarkBlock extends BaseRotatedPillarBlock {
         }
 
         @Override
-        public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+        public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
             context.add(ItemTags.LOGS, this);
             if (flammable) {
                 context.add(ItemTags.LOGS_THAT_BURN, this);
@@ -60,4 +57,3 @@ public abstract class BaseBarkBlock extends BaseRotatedPillarBlock {
         }
     }
 }
-

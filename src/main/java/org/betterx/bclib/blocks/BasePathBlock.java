@@ -8,10 +8,10 @@ import org.betterx.wover.loot.api.BlockLootProvider;
 import org.betterx.wover.loot.api.LootLookupProvider;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.data.models.model.TextureMapping;
-import net.minecraft.data.models.model.TextureSlot;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,8 +20,6 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -55,10 +53,9 @@ public abstract class BasePathBlock extends BaseBlockNotFull implements BlockLoo
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         var side = TextureMapping.getBlockTexture(this, "_side");
-        side = ResourceLocation.fromNamespaceAndPath(side.getNamespace(), side
+        side = Identifier.fromNamespaceAndPath(side.getNamespace(), side
                 .getPath()
                 .replace("_path", ""));
 
@@ -74,7 +71,7 @@ public abstract class BasePathBlock extends BaseBlockNotFull implements BlockLoo
 
     @Override
     public LootTable.Builder registerBlockLoot(
-            @NotNull ResourceLocation location,
+            @NotNull Identifier location,
             @NotNull LootLookupProvider provider,
             @NotNull ResourceKey<LootTable> tableKey
     ) {
@@ -87,4 +84,3 @@ public abstract class BasePathBlock extends BaseBlockNotFull implements BlockLoo
         }
     }
 }
-

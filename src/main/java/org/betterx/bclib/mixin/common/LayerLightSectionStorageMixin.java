@@ -18,7 +18,7 @@ public class LayerLightSectionStorageMixin {
         return null;
     }
 
-    @Inject(method = "getStoredLevel", at = @At(value = "HEAD"), cancellable = true)
+    @Inject(remap = false, method = "getStoredLevel", at = @At(value = "HEAD"), cancellable = true)
     private void bclib_lightFix(long blockPos, CallbackInfoReturnable<Integer> info) {
         try {
             long pos = SectionPos.blockToSection(blockPos);
@@ -33,6 +33,3 @@ public class LayerLightSectionStorageMixin {
         }
     }
 }
-
-
-

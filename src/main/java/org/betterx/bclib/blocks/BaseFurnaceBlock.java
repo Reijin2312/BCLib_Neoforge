@@ -9,16 +9,18 @@ import org.betterx.bclib.registry.BaseBlockEntities;
 import org.betterx.wover.block.api.model.BlockModelProvider;
 import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
 
+import com.mojang.math.Quadrant;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.MultiVariant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.data.models.blockstates.MultiVariantGenerator;
-import net.minecraft.data.models.blockstates.PropertyDispatch;
-import net.minecraft.data.models.blockstates.Variant;
-import net.minecraft.data.models.blockstates.VariantProperties;
-import net.minecraft.data.models.model.ModelTemplates;
-import net.minecraft.data.models.model.TextureMapping;
-import net.minecraft.data.models.model.TextureSlot;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
+import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.client.renderer.block.model.VariantMutator;
+import net.minecraft.resources.Identifier;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -35,8 +37,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import com.google.common.collect.Lists;
 
@@ -66,7 +66,6 @@ public abstract class BaseFurnaceBlock extends FurnaceBlock implements RenderLay
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         final var baseTexture = TextureMapping.getBlockTexture(this);
@@ -85,37 +84,35 @@ public abstract class BaseFurnaceBlock extends FurnaceBlock implements RenderLay
                 .put(BCLModels.GLOW, baseTexture.withSuffix("_glow"));
         final var glowModel = BCLModels.FURNACE_GLOW.createWithSuffix(this, "_lit", mappingGlow, generator.modelOutput());
 
-        final var prop = PropertyDispatch.properties(LIT, FACING);
+        final var prop = PropertyDispatch.initial(LIT, FACING);
         addRotationModels(prop, furnaceModel, false);
         addRotationModels(prop, glowModel, true);
 
-        generator.acceptBlockState(MultiVariantGenerator.multiVariant(this).with(prop));
+        generator.acceptBlockState(MultiVariantGenerator.dispatch(this).with(prop));
     }
 
-    @OnlyIn(Dist.CLIENT)
     private static void addRotationModels(
-            PropertyDispatch.C2<Boolean, Direction> prop,
-            ResourceLocation furnaceModel,
+            PropertyDispatch.C2<MultiVariant, Boolean, Direction> prop,
+            Identifier furnaceModel,
             boolean lit
     ) {
         prop.select(lit, Direction.EAST,
-                Variant.variant()
-                       .with(VariantProperties.MODEL, furnaceModel)
-                       .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)
+                BlockModelGenerators
+                        .plainVariant(furnaceModel)
+                        .with(VariantMutator.Y_ROT.withValue(Quadrant.R90))
         );
         prop.select(lit, Direction.SOUTH,
-                Variant.variant()
-                       .with(VariantProperties.MODEL, furnaceModel)
-                       .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)
+                BlockModelGenerators
+                        .plainVariant(furnaceModel)
+                        .with(VariantMutator.Y_ROT.withValue(Quadrant.R180))
         );
         prop.select(lit, Direction.WEST,
-                Variant.variant()
-                       .with(VariantProperties.MODEL, furnaceModel)
-                       .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)
+                BlockModelGenerators
+                        .plainVariant(furnaceModel)
+                        .with(VariantMutator.Y_ROT.withValue(Quadrant.R270))
         );
         prop.select(lit, Direction.NORTH,
-                Variant.variant()
-                       .with(VariantProperties.MODEL, furnaceModel)
+                BlockModelGenerators.plainVariant(furnaceModel)
         );
     }
 
@@ -154,10 +151,14 @@ public abstract class BaseFurnaceBlock extends FurnaceBlock implements RenderLay
             BlockEntityType<T> blockEntityType,
             BlockEntityType<? extends AbstractFurnaceBlockEntity> blockEntityType2
     ) {
-        return level.isClientSide ? null : createTickerHelper(
+        return level.isClientSide() ? null : createTickerHelper(
                 blockEntityType,
                 blockEntityType2,
-                AbstractFurnaceBlockEntity::serverTick
+                (tickLevel, pos, state, blockEntity) -> {
+                    if (tickLevel instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                        AbstractFurnaceBlockEntity.serverTick(serverLevel, pos, state, blockEntity);
+                    }
+                }
         );
     }
 
@@ -171,4 +172,3 @@ public abstract class BaseFurnaceBlock extends FurnaceBlock implements RenderLay
         }
     }
 }
-

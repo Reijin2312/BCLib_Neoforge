@@ -16,6 +16,3 @@ public interface ShovelItemAccessor {
         throw new AssertionError("@Accessor dummy body called");
     }
 }
-
-
-

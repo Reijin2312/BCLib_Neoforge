@@ -9,7 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,7 +39,7 @@ public abstract class AdvancementDataProvider implements DataProvider {
     public CompletableFuture<?> run(CachedOutput output) {
         return registries.thenCompose(lookup -> {
             bootstrap(lookup);
-            Set<ResourceLocation> seen = new HashSet<>();
+            Set<Identifier> seen = new HashSet<>();
             List<CompletableFuture<?>> futures = new ArrayList<>();
             Consumer<AdvancementHolder> consumer = holder -> {
                 if (!seen.add(holder.id())) {

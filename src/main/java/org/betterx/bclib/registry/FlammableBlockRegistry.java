@@ -1,6 +1,5 @@
 package org.betterx.bclib.registry;
 
-import org.betterx.bclib.BCLib;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;

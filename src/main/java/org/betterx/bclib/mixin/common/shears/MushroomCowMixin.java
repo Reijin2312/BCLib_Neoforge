@@ -2,7 +2,7 @@ package org.betterx.bclib.mixin.common.shears;
 
 import org.betterx.bclib.items.tool.BaseShearsItem;
 
-import net.minecraft.world.entity.animal.MushroomCow;
+import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.item.ItemStack;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -19,12 +19,10 @@ public class MushroomCowMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z"
             ),
+            remap = false,
             require = 0
     )
     private boolean bclib_isShears(ItemStack stack, ItemAbility ability, Operation<Boolean> original) {
         return original.call(stack, ability) || BaseShearsItem.isShear(stack);
     }
 }
-
-
-

@@ -8,7 +8,7 @@ import org.betterx.bclib.complexmaterials.set.common.AbstractStairs;
 import org.betterx.wover.recipe.api.RecipeBuilder;
 
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
@@ -36,12 +36,12 @@ public class Stairs extends AbstractStairs<StoneComplexMaterial> {
     }
 
     @Override
-    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, ResourceLocation id) {
+    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, Identifier id) {
         super.makeRecipe(context, parentMaterial, id);
 
         RecipeBuilder
                 .stonecutting(
-                        ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "stonecutter_" + id.getPath()),
+                        Identifier.fromNamespaceAndPath(id.getNamespace(), "stonecutter_" + id.getPath()),
                         parentMaterial.getBlock(suffix)
                 )
                 .input(parentMaterial.getBlock(getSourceBlockSlot()))

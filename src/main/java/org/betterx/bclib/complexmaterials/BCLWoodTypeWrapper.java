@@ -2,7 +2,7 @@ package org.betterx.bclib.complexmaterials;
 
 import org.betterx.wover.core.api.ModCore;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
@@ -16,12 +16,12 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class BCLWoodTypeWrapper {
-    public final ResourceLocation id;
+    public final Identifier id;
     public final WoodType type;
     public final MapColor color;
     public final boolean flammable;
 
-    protected BCLWoodTypeWrapper(ResourceLocation id, WoodType type, MapColor color, boolean flammable) {
+    protected BCLWoodTypeWrapper(Identifier id, WoodType type, MapColor color, boolean flammable) {
         this.id = id;
         this.type = type;
         this.color = color;
@@ -32,7 +32,7 @@ public final class BCLWoodTypeWrapper {
         return new Builder(modCore.mk(string));
     }
 
-    public static Builder create(ResourceLocation id) {
+    public static Builder create(Identifier id) {
         return new Builder(id);
     }
 
@@ -40,7 +40,7 @@ public final class BCLWoodTypeWrapper {
         return type.setType();
     }
 
-    public ResourceLocation id() {
+    public Identifier id() {
         return id;
     }
 
@@ -77,12 +77,12 @@ public final class BCLWoodTypeWrapper {
 
 
     public static class Builder {
-        private final ResourceLocation id;
+        private final Identifier id;
         private BlockSetType setType;
         private MapColor color;
         private boolean flammable;
 
-        public Builder(ResourceLocation id) {
+        public Builder(Identifier id) {
             this.id = id;
             this.color = MapColor.WOOD;
             this.flammable = true;
@@ -131,7 +131,7 @@ public final class BCLWoodTypeWrapper {
         return type;
     }
 
-    private static BlockSetType createBlockSetType(ResourceLocation id) {
+    private static BlockSetType createBlockSetType(Identifier id) {
         try {
             if (BlockSetType.class.isRecord()) {
                 RecordComponent[] components = BlockSetType.class.getRecordComponents();
@@ -160,7 +160,7 @@ public final class BCLWoodTypeWrapper {
         return WoodType.register(type);
     }
 
-    private static WoodType createWoodType(ResourceLocation id, BlockSetType setType) {
+    private static WoodType createWoodType(Identifier id, BlockSetType setType) {
         try {
             for (Constructor<?> ctor : WoodType.class.getDeclaredConstructors()) {
                 Class<?>[] params = ctor.getParameterTypes();
@@ -169,7 +169,7 @@ public final class BCLWoodTypeWrapper {
                 for (int i = 0; i < params.length; i++) {
                     if (params[i] == String.class) {
                         args[i] = id.getPath();
-                    } else if (params[i] == ResourceLocation.class) {
+                    } else if (params[i] == Identifier.class) {
                         args[i] = id;
                     } else if (params[i] == BlockSetType.class) {
                         args[i] = setType;
@@ -189,7 +189,7 @@ public final class BCLWoodTypeWrapper {
         throw new IllegalStateException("Unsupported WoodType layout for " + id);
     }
 
-    private static WoodType findExistingWoodType(ResourceLocation id) {
+    private static WoodType findExistingWoodType(Identifier id) {
         try {
             for (Field field : WoodType.class.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers())) continue;
@@ -207,7 +207,7 @@ public final class BCLWoodTypeWrapper {
         return null;
     }
 
-    private static WoodType findWoodTypeInMap(Map<?, ?> map, ResourceLocation id) {
+    private static WoodType findWoodTypeInMap(Map<?, ?> map, Identifier id) {
         Object value = map.get(id);
         if (value instanceof WoodType type) return type;
         value = map.get(id.getPath());
@@ -219,7 +219,7 @@ public final class BCLWoodTypeWrapper {
             Object key = entry.getKey();
             Object entryValue = entry.getValue();
             if (!(entryValue instanceof WoodType type)) continue;
-            if (key instanceof ResourceLocation rl && rl.getPath().equals(id.getPath())) return type;
+            if (key instanceof Identifier rl && rl.getPath().equals(id.getPath())) return type;
             if (key instanceof String name && name.equals(id.getPath())) return type;
         }
         return null;

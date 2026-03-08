@@ -6,13 +6,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-@OnlyIn(Dist.CLIENT)
-@EventBusSubscriber(modid = org.betterx.bclib.BCLib.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = org.betterx.bclib.BCLib.MOD_ID, value = Dist.CLIENT)
 public final class DataExchangeClientEvents {
     private static ClientPacketListener lastClientConnection;
 

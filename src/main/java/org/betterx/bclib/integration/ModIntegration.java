@@ -8,7 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -36,7 +38,7 @@ public abstract class ModIntegration {
         this.C = modCore;
     }
 
-    public ResourceLocation getID(String name) {
+    public Identifier getID(String name) {
         return C.mk(name);
     }
 
@@ -45,11 +47,11 @@ public abstract class ModIntegration {
     }
 
     public Block getBlock(String name) {
-        return BuiltInRegistries.BLOCK.get(getID(name));
+        return BuiltInRegistries.BLOCK.get(getID(name)).map(Holder.Reference::value).orElse(Blocks.AIR);
     }
 
     public Item getItem(String name) {
-        return BuiltInRegistries.ITEM.get(getID(name));
+        return BuiltInRegistries.ITEM.get(getID(name)).map(Holder.Reference::value).orElse(Items.AIR);
     }
 
     public BlockState getDefaultState(String name) {

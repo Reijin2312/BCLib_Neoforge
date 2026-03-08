@@ -42,6 +42,7 @@ java {
 
 def local_wunderlib = findProject(':wunderlib') != null
 def local_wover = findProject(':WorldWeaver') != null
+def enableEmiRuntime = (project.findProperty("enable_emi_runtime")?.toString()?.toBoolean()) ?: false
 
 neoForge {
     version = project.neoforge_version
@@ -53,8 +54,8 @@ neoForge {
         server {
             server()
         }
-        data {
-            data()
+        clientData {
+            clientData()
             programArguments.addAll(
                     "--mod", archivesBaseName,
                     "--all",
@@ -73,6 +74,11 @@ neoForge {
 
 sourceSets {
     main {
+        if (!enableEmiRuntime) {
+            java {
+                exclude 'org/betterx/bclib/integration/emi/**'
+            }
+        }
         // Add the datagenned files into the jar.
         resources {
             srcDirs += [
@@ -92,7 +98,11 @@ dependencies {
     annotationProcessor "org.spongepowered:mixin:0.8.7:processor"
 
     compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
-    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
+    if (enableEmiRuntime) {
+        runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
+    } else {
+        println "EMI runtime disabled (set -Penable_emi_runtime=true to re-enable)"
+    }
 
     println "Using local WunderLib: ${local_wunderlib}"
     if (local_wunderlib) {
@@ -283,10 +293,10 @@ tasks.register("generateMixinMappings") {
 
 tasks.register("fixMixinRefmap") {
     def refmapFile = layout.buildDirectory.file("resources/main/${refmapName}")
-    inputs.file(refmapFile)
+    inputs.files(refmapFile).optional()
     outputs.file(refmapFile)
-    dependsOn(tasks.named("processResources"))
     dependsOn(tasks.named("compileJava"))
+    mustRunAfter(tasks.named("processResources"))
     doLast {
         def file = refmapFile.get().asFile
         if (!file.exists()) {
@@ -390,7 +400,7 @@ tasks.sourcesJar {
 
 jar {
     dependsOn("fixMixinRefmap")
-    dependsOn(tasks.matching { it.name == "runData" })
+    dependsOn(tasks.matching { it.name == "runClientData" })
     from("src/main/generated")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from "LICENSE"
@@ -416,13 +426,23 @@ artifacts {
 }
 
 tasks.named("compileJava") {
+    mustRunAfter(tasks.named("processResources"))
     finalizedBy(tasks.named("fixMixinRefmap"))
 }
 
-tasks.matching { it.name == "runData" }.configureEach {
+tasks.matching { it.name in ["runData", "runClientData"] }.configureEach {
     dependsOn(tasks.named("fixMixinRefmap"))
     // Datagen runs against named classes; disable refmap remapping to avoid obf targets.
     systemProperty "mixin.env.disableRefMap", "true"
+}
+
+tasks.matching { it.name == "runClientData" }.configureEach {
+    doFirst {
+        // EMI runtime currently targets older mappings (ResourceLocation) and crashes named datagen on 1.21.11.
+        if (hasProperty("classpath")) {
+            classpath = classpath.filter { file -> !file.name.startsWith("emi-neoforge-") }
+        }
+    }
 }
 
 allprojects {

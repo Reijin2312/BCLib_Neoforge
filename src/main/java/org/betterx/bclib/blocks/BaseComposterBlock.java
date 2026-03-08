@@ -8,12 +8,10 @@ import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 import org.betterx.wover.tag.api.predefined.CommonBlockTags;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ComposterBlock;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseComposterBlock extends ComposterBlock implements BlockModelProvider, BlockTagProvider, DropSelfLootProvider<BaseComposterBlock> {
     protected BaseComposterBlock(Block source) {
@@ -21,13 +19,12 @@ public abstract class BaseComposterBlock extends ComposterBlock implements Block
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         generator.createComposter(this);
     }
 
     @Override
-    public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+    public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
         context.add(this, CommonBlockTags.COMPOSTER, org.betterx.wover.tag.api.predefined.CommonPoiTags.FARMER_WORKSTATION);
     }
 
@@ -37,7 +34,7 @@ public abstract class BaseComposterBlock extends ComposterBlock implements Block
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(this, CommonBlockTags.COMPOSTER, CommonBlockTags.WOODEN_COMPOSTER, org.betterx.wover.tag.api.predefined.CommonPoiTags.FARMER_WORKSTATION);
         }
     }
@@ -46,4 +43,3 @@ public abstract class BaseComposterBlock extends ComposterBlock implements Block
         return new BaseComposterBlock.Wood(source);
     }
 }
-

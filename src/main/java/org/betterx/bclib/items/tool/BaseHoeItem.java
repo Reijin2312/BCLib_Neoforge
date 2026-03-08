@@ -4,26 +4,22 @@ import org.betterx.bclib.client.models.ModelsHelper;
 import org.betterx.bclib.interfaces.ItemModelProvider;
 
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.HoeItem;
-import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.ToolMaterial;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public class BaseHoeItem extends HoeItem implements ItemModelProvider {
-    public BaseHoeItem(Tier material, int attackDamage, float attackSpeed, Properties settings) {
-        this(material, settings.attributes(HoeItem.createAttributes(material, attackDamage, attackSpeed)));
+    public BaseHoeItem(ToolMaterial material, int attackDamage, float attackSpeed, Properties settings) {
+        super(material, attackDamage, attackSpeed, settings);
     }
 
-    public BaseHoeItem(Tier material, Properties settings) {
-        super(material, settings);
+    public BaseHoeItem(ToolMaterial material, Properties settings) {
+        super(material, 0.0F, 0.0F, settings);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation resourceLocation) {
+    public BlockModel getItemModel(Identifier resourceLocation) {
         return ModelsHelper.createHandheldItem(resourceLocation);
     }
 }
-

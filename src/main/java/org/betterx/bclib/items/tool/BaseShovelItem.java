@@ -4,26 +4,22 @@ import org.betterx.bclib.client.models.ModelsHelper;
 import org.betterx.bclib.interfaces.ItemModelProvider;
 
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.ToolMaterial;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 public class BaseShovelItem extends ShovelItem implements ItemModelProvider {
-    public BaseShovelItem(Tier material, float attackDamage, float attackSpeed, Properties settings) {
-        this(material, settings.attributes(ShovelItem.createAttributes(material, attackDamage, attackSpeed)));
+    public BaseShovelItem(ToolMaterial material, float attackDamage, float attackSpeed, Properties settings) {
+        super(material, attackDamage, attackSpeed, settings);
     }
 
-    public BaseShovelItem(Tier material, Properties settings) {
-        super(material, settings);
+    public BaseShovelItem(ToolMaterial material, Properties settings) {
+        super(material, 0.0F, 0.0F, settings);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation resourceLocation) {
+    public BlockModel getItemModel(Identifier resourceLocation) {
         return ModelsHelper.createHandheldItem(resourceLocation);
     }
 }
-

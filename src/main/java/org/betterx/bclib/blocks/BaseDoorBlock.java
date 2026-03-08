@@ -13,7 +13,7 @@ import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
@@ -24,9 +24,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.LootParams;
-
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,24 +51,23 @@ public abstract class BaseDoorBlock extends DoorBlock implements RenderLayerProv
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         generator.vanillaGenerator.createDoor(this);
     }
 
     @Override
-    public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+    public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
         context.add(this, BlockTags.DOORS);
     }
 
     @Override
-    public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+    public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
         context.add(this, ItemTags.DOORS);
     }
 
     //    @Override
 //    @OnlyIn(Dist.CLIENT)
-//    public @Nullable BlockModel getBlockModel(ResourceLocation resourceLocation, BlockState blockState) {
+//    public @Nullable BlockModel getBlockModel(Identifier resourceLocation, BlockState blockState) {
 //        DoorType doorType = getDoorType(blockState);
 //        Optional<String> pattern = PatternsHelper.createJson(BasePatterns.BLOCK_DOOR_BOTTOM, resourceLocation);
 //        switch (doorType) {
@@ -95,7 +91,7 @@ public abstract class BaseDoorBlock extends DoorBlock implements RenderLayerProv
 //    public UnbakedModel getModelVariant(
 //            ModelResourceLocation stateId,
 //            BlockState blockState,
-//            Map<ResourceLocation, UnbakedModel> modelCache
+//            Map<Identifier, UnbakedModel> modelCache
 //    ) {
 //        Direction facing = blockState.getValue(FACING);
 //        DoorType doorType = getDoorType(blockState);
@@ -198,12 +194,12 @@ public abstract class BaseDoorBlock extends DoorBlock implements RenderLayerProv
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(this, BlockTags.DOORS, BlockTags.WOODEN_DOORS);
         }
 
         @Override
-        public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+        public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
             context.add(this, ItemTags.DOORS, ItemTags.WOODEN_DOORS);
         }
     }
@@ -233,4 +229,3 @@ public abstract class BaseDoorBlock extends DoorBlock implements RenderLayerProv
         return BehaviourHelper.from(source, type, Wood::new, Stone::new, Metal::new);
     }
 }
-

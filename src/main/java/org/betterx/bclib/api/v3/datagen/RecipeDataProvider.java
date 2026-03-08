@@ -3,13 +3,11 @@ package org.betterx.bclib.api.v3.datagen;
 import org.betterx.bclib.BCLib;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,20 +19,20 @@ public class RecipeDataProvider extends RecipeProvider {
 
     public RecipeDataProvider(
             @Nullable List<String> modIDs,
-            PackOutput output,
-            CompletableFuture<HolderLookup.Provider> registriesFuture
+            HolderLookup.Provider registries,
+            RecipeOutput output
     ) {
-        super(output, registriesFuture);
+        super(registries, output);
         this.modIDs = modIDs;
     }
 
     @Override
-    public void buildRecipes(RecipeOutput exporter) {
+    protected void buildRecipes() {
         if (RECIPES == null) return;
 
         for (var r : RECIPES) {
             if (modIDs == null || modIDs.isEmpty() || modIDs.contains(r.getNamespace())) {
-                r.build(exporter);
+                r.build(this.output);
             }
         }
     }

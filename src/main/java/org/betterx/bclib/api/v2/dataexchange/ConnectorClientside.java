@@ -6,14 +6,11 @@ import org.betterx.bclib.api.v2.dataexchange.handler.DataExchange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 
 /**
  * This is an internal class that handles a Clienetside players Connection to a Server
  */
-@OnlyIn(Dist.CLIENT)
 public class ConnectorClientside extends Connector {
     private Minecraft client;
 
@@ -58,4 +55,3 @@ public class ConnectorClientside extends Connector {
         h.sendToServer(this.client);
     }
 }
-

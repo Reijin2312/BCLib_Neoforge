@@ -13,12 +13,12 @@ import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
+import com.mojang.math.Quadrant;
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Block;
@@ -26,8 +26,6 @@ import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Map;
 import java.util.Optional;
@@ -43,17 +41,15 @@ public abstract class BaseFenceBlock extends FenceBlock implements RuntimeBlockM
 
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation blockId) {
-        ResourceLocation parentId = BuiltInRegistries.BLOCK.getKey(parent);
+    public BlockModel getItemModel(Identifier blockId) {
+        Identifier parentId = BuiltInRegistries.BLOCK.getKey(parent);
         Optional<String> pattern = PatternsHelper.createJson(BasePatterns.ITEM_FENCE, parentId);
         return ModelsHelper.fromPattern(pattern);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public @Nullable BlockModel getBlockModel(ResourceLocation blockId, BlockState blockState) {
-        ResourceLocation parentId = BuiltInRegistries.BLOCK.getKey(parent);
+    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
+        Identifier parentId = BuiltInRegistries.BLOCK.getKey(parent);
         String path = blockId.getPath();
         Optional<String> pattern = Optional.empty();
         if (path.endsWith("_post")) {
@@ -66,52 +62,50 @@ public abstract class BaseFenceBlock extends FenceBlock implements RuntimeBlockM
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public UnbakedModel getModelVariant(
-            ModelResourceLocation stateId,
+    public BlockStateModel.UnbakedRoot getModelVariant(
+            Identifier stateId,
             BlockState blockState,
-            Map<ResourceLocation, UnbakedModel> modelCache
+            Map<Identifier, UnbakedModel> modelCache
     ) {
-        ModelResourceLocation postId = RuntimeBlockModelProvider.remapModelResourceLocation(stateId, blockState, "_post");
-        ModelResourceLocation sideId = RuntimeBlockModelProvider.remapModelResourceLocation(stateId, blockState, "_side");
+        Identifier postId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, "_post");
+        Identifier sideId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, "_side");
         registerBlockModel(postId, postId, blockState, modelCache);
         registerBlockModel(sideId, sideId, blockState, modelCache);
 
         ModelsHelper.MultiPartBuilder builder = ModelsHelper.MultiPartBuilder.create(stateDefinition);
-        builder.part(sideId.id()).setCondition(state -> state.getValue(NORTH)).setUVLock(true).add();
-        builder.part(sideId.id())
+        builder.part(sideId).setCondition(state -> state.getValue(NORTH)).setUVLock(true).add();
+        builder.part(sideId)
                .setCondition(state -> state.getValue(EAST))
-               .setTransformation(BlockModelRotation.X0_Y90.getRotation())
+               .setYRotation(Quadrant.R90)
                .setUVLock(true)
                .add();
-        builder.part(sideId.id())
+        builder.part(sideId)
                .setCondition(state -> state.getValue(SOUTH))
-               .setTransformation(BlockModelRotation.X0_Y180.getRotation())
+               .setYRotation(Quadrant.R180)
                .setUVLock(true)
                .add();
-        builder.part(sideId.id())
+        builder.part(sideId)
                .setCondition(state -> state.getValue(WEST))
-               .setTransformation(BlockModelRotation.X0_Y270.getRotation())
+               .setYRotation(Quadrant.R270)
                .setUVLock(true)
                .add();
-        builder.part(postId.id()).add();
+        builder.part(postId).add();
 
         return builder.build();
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
         generator.createFence(parent, this);
     }
 
     @Override
-    public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+    public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
         context.add(this, BlockTags.FENCES);
     }
 
     @Override
-    public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+    public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
         context.add(this, ItemTags.FENCES);
     }
 
@@ -121,12 +115,12 @@ public abstract class BaseFenceBlock extends FenceBlock implements RuntimeBlockM
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(this, BlockTags.FENCES, BlockTags.WOODEN_FENCES);
         }
 
         @Override
-        public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+        public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
             context.add(this, ItemTags.FENCES, ItemTags.WOODEN_FENCES);
         }
     }
@@ -135,4 +129,3 @@ public abstract class BaseFenceBlock extends FenceBlock implements RuntimeBlockM
         return new BaseFenceBlock.Wood(source, type);
     }
 }
-

@@ -8,10 +8,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,8 +21,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,7 +28,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = DebugRenderer.class)
-@OnlyIn(Dist.CLIENT)
 public class DebugRendererMixin {
     @Inject(method = "render", at = @At("TAIL"))
     void bcl_render(
@@ -52,24 +50,23 @@ public class DebugRendererMixin {
                 final BlockPos pos = blockHitResult.getBlockPos();
                 final BlockState state = Blocks.DIRT.defaultBlockState();
                 final int color = airSelect.airSelectionColor();
-                final VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
+                final VertexConsumer consumer = bufferSource.getBuffer(RenderTypes.lines());
                 final Camera camera = minecraft.gameRenderer.getMainCamera();
-                final Vec3 camPos = camera.getPosition();
+                final Vec3 camPos = camera.position();
 
-                LevelRendererAccessor.bclib_renderShape(
+                ShapeRenderer.renderShape(
                         poseStack, consumer,
-                        state.getShape(minecraft.level, pos, CollisionContext.of(camera.getEntity())),
+                        state.getShape(minecraft.level, pos, CollisionContext.of(camera.entity())),
                         pos.getX() - camPos.x(), pos.getY() - camPos.y(), pos.getZ() - camPos.z(),
-                        FastColor.ARGB32.red(color) / (float) 0xff,
-                        FastColor.ARGB32.green(color) / (float) 0xff,
-                        FastColor.ARGB32.blue(color) / (float) 0xff,
-                        FastColor.ARGB32.alpha(color) / (float) 0xff
+                        ARGB.colorFromFloat(
+                                ARGB.alpha(color) / (float) 0xff,
+                                ARGB.red(color) / (float) 0xff,
+                                ARGB.green(color) / (float) 0xff,
+                                ARGB.blue(color) / (float) 0xff
+                        ),
+                        1.0F
                 );
             }
         }
     }
 }
-
-
-
-

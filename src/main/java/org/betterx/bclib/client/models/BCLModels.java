@@ -4,15 +4,16 @@ import org.betterx.bclib.BCLib;
 import org.betterx.bclib.furniture.block.BaseChair;
 import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
 
+import com.mojang.math.Quadrant;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
+import net.minecraft.client.data.models.model.ModelTemplate;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.client.renderer.block.model.VariantMutator;
 import net.minecraft.core.Direction;
-import net.minecraft.data.models.blockstates.MultiVariantGenerator;
-import net.minecraft.data.models.blockstates.PropertyDispatch;
-import net.minecraft.data.models.blockstates.Variant;
-import net.minecraft.data.models.blockstates.VariantProperties;
-import net.minecraft.data.models.model.ModelTemplate;
-import net.minecraft.data.models.model.TextureMapping;
-import net.minecraft.data.models.model.TextureSlot;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 import static org.betterx.bclib.furniture.block.AbstractChair.FACING;
@@ -28,14 +29,14 @@ public class BCLModels {
     public static final TextureSlot GLASS = TextureSlot.create("glass");
     public static final TextureSlot PANEL = TextureSlot.create("panel");
 
-    public static final ResourceLocation BAR_STOOL_MODEL_LOCATION = BCLib.C.mk("block/bar_stool");
+    public static final Identifier BAR_STOOL_MODEL_LOCATION = BCLib.C.mk("block/bar_stool");
     public static final ModelTemplate BAR_STOOL = new ModelTemplate(
             Optional.of(BAR_STOOL_MODEL_LOCATION),
             Optional.empty(),
             TextureSlot.TEXTURE, CLOTH
     );
 
-    public static final ResourceLocation CHAIR_MODEL_LOCATION = BCLib.C.mk("block/chair");
+    public static final Identifier CHAIR_MODEL_LOCATION = BCLib.C.mk("block/chair");
     public static final ModelTemplate CHAIR = new ModelTemplate(
             Optional.of(CHAIR_MODEL_LOCATION),
             Optional.empty(),
@@ -48,28 +49,29 @@ public class BCLModels {
             TextureSlot.PARTICLE
     );
 
-    public static final ResourceLocation TABURET_MODEL_LOCATION = BCLib.C.mk("block/taburet");
+    public static final Identifier TABURET_MODEL_LOCATION = BCLib.C.mk("block/taburet");
     public static final ModelTemplate TABURET = new ModelTemplate(
             Optional.of(TABURET_MODEL_LOCATION),
             Optional.empty(),
             TextureSlot.TEXTURE
     );
 
-    public static final ResourceLocation CHEST_MODEL_LOCATION = BCLib.C.mk("block/chest_item");
+    public static final Identifier CHEST_MODEL_LOCATION = BCLib.C.mk("block/chest_item");
     public static final ModelTemplate CHEST_ITEM = new ModelTemplate(
             Optional.of(CHEST_MODEL_LOCATION),
             Optional.empty(),
-            TextureSlot.TEXTURE
+            TextureSlot.TEXTURE,
+            TextureSlot.PARTICLE
     );
 
-    public static final ResourceLocation PATH_MODEL_LOCATION = BCLib.C.mk("block/path");
+    public static final Identifier PATH_MODEL_LOCATION = BCLib.C.mk("block/path");
     public static final ModelTemplate PATH = new ModelTemplate(
             Optional.of(PATH_MODEL_LOCATION),
             Optional.empty(),
             TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE
     );
 
-    public static final ResourceLocation LADDER_MODEL_LOCATION = BCLib.C.mk("block/ladder");
+    public static final Identifier LADDER_MODEL_LOCATION = BCLib.C.mk("block/ladder");
     public static final ModelTemplate LADDER = new ModelTemplate(
             Optional.of(LADDER_MODEL_LOCATION),
             Optional.empty(),
@@ -136,12 +138,13 @@ public class BCLModels {
                 CLOTH,
                 TextureMapping.getBlockTexture(clothType)
         );
-        ResourceLocation modelLocation = BAR_STOOL.create(block, mapping, generators.vanillaGenerator.modelOutput());
+        Identifier modelLocation = BAR_STOOL.create(block, mapping, generators.vanillaGenerator.modelOutput());
 
         var blockStateGenerator = MultiVariantGenerator
-                .multiVariant(block)
+                .dispatch(block, BlockModelGenerators.plainVariant(modelLocation))
                 .with(getChairFacingPropertyDispatch(modelLocation));
         generators.acceptBlockState(blockStateGenerator);
+        generators.delegateItemModel(block, modelLocation);
     }
 
     public static void createTaburetBlockModel(
@@ -153,12 +156,13 @@ public class BCLModels {
                 TextureSlot.TEXTURE,
                 TextureMapping.getBlockTexture(woodType)
         );
-        ResourceLocation modelLocation = TABURET.create(block, mapping, generators.vanillaGenerator.modelOutput());
+        Identifier modelLocation = TABURET.create(block, mapping, generators.vanillaGenerator.modelOutput());
 
         var blockStateGenerator = MultiVariantGenerator
-                .multiVariant(block)
+                .dispatch(block, BlockModelGenerators.plainVariant(modelLocation))
                 .with(getChairFacingPropertyDispatch(modelLocation));
         generators.acceptBlockState(blockStateGenerator);
+        generators.delegateItemModel(block, modelLocation);
     }
 
     public static void createChairBlockModel(
@@ -173,95 +177,93 @@ public class BCLModels {
                 TextureSlot.PARTICLE,
                 TextureMapping.getBlockTexture(woodType)
         );
-        ResourceLocation modelLocation = CHAIR.create(block, mapping, generators.vanillaGenerator.modelOutput());
-        ResourceLocation topLocation = generators.particleOnlyModel(woodType);//CHAIR_TOP.create(block, mapping, generators.vanillaGenerator.modelOutput);
+        Identifier modelLocation = CHAIR.create(block, mapping, generators.vanillaGenerator.modelOutput());
+        Identifier topLocation = generators.particleOnlyModel(woodType);//CHAIR_TOP.create(block, mapping, generators.vanillaGenerator.modelOutput);
 
 
         var blockStateGenerator = MultiVariantGenerator
-                .multiVariant(block)
+                .dispatch(block)
                 .with(
                         PropertyDispatch
-                                .properties(FACING, BaseChair.TOP)
+                                .initial(FACING, BaseChair.TOP)
                                 .select(
                                         Direction.EAST,
                                         false,
-                                        Variant.variant()
-                                               .with(VariantProperties.MODEL, modelLocation)
-                                               .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)
+                                        BlockModelGenerators
+                                                .plainVariant(modelLocation)
+                                                .with(VariantMutator.Y_ROT.withValue(Quadrant.R90))
                                 )
                                 .select(
                                         Direction.SOUTH,
                                         false,
-                                        Variant.variant()
-                                               .with(VariantProperties.MODEL, modelLocation)
-                                               .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)
+                                        BlockModelGenerators
+                                                .plainVariant(modelLocation)
+                                                .with(VariantMutator.Y_ROT.withValue(Quadrant.R180))
                                 )
                                 .select(
                                         Direction.WEST,
                                         false,
-                                        Variant.variant()
-                                               .with(VariantProperties.MODEL, modelLocation)
-                                               .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)
+                                        BlockModelGenerators
+                                                .plainVariant(modelLocation)
+                                                .with(VariantMutator.Y_ROT.withValue(Quadrant.R270))
                                 )
                                 .select(
                                         Direction.NORTH,
                                         false,
-                                        Variant.variant()
-                                               .with(VariantProperties.MODEL, modelLocation)
+                                        BlockModelGenerators.plainVariant(modelLocation)
                                 )
                                 .select(
                                         Direction.NORTH,
                                         true,
-                                        Variant.variant()
-                                               .with(VariantProperties.MODEL, topLocation)
+                                        BlockModelGenerators.plainVariant(topLocation)
                                 )
                                 .select(
                                         Direction.EAST,
                                         true,
-                                        Variant.variant()
-                                               .with(VariantProperties.MODEL, topLocation)
+                                        BlockModelGenerators.plainVariant(topLocation)
                                 )
                                 .select(
                                         Direction.SOUTH,
                                         true,
-                                        Variant.variant()
-                                               .with(VariantProperties.MODEL, topLocation)
+                                        BlockModelGenerators.plainVariant(topLocation)
                                 )
                                 .select(
                                         Direction.WEST,
                                         true,
-                                        Variant.variant()
-                                               .with(VariantProperties.MODEL, topLocation)
+                                        BlockModelGenerators.plainVariant(topLocation)
                                 )
                 );
         generators.acceptBlockState(blockStateGenerator);
+        generators.delegateItemModel(block, modelLocation);
     }
 
-    private static PropertyDispatch.@NotNull C1<Direction> getChairFacingPropertyDispatch(ResourceLocation modelLocation) {
+    private static PropertyDispatch.@NotNull C1<VariantMutator, Direction> getChairFacingPropertyDispatch(Identifier modelLocation) {
         return PropertyDispatch
-                .property(FACING)
+                .modify(FACING)
                 .select(
                         Direction.NORTH,
-                        Variant.variant()
-                               .with(VariantProperties.MODEL, modelLocation)
-                               .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)
+                        VariantMutator
+                                .MODEL
+                                .withValue(modelLocation)
+                                .then(VariantMutator.Y_ROT.withValue(Quadrant.R270))
                 )
                 .select(
                         Direction.EAST,
-                        Variant.variant()
-                               .with(VariantProperties.MODEL, modelLocation)
+                        VariantMutator.MODEL.withValue(modelLocation)
                 )
                 .select(
                         Direction.SOUTH,
-                        Variant.variant()
-                               .with(VariantProperties.MODEL, modelLocation)
-                               .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)
+                        VariantMutator
+                                .MODEL
+                                .withValue(modelLocation)
+                                .then(VariantMutator.Y_ROT.withValue(Quadrant.R90))
                 )
                 .select(
                         Direction.WEST,
-                        Variant.variant()
-                               .with(VariantProperties.MODEL, modelLocation)
-                               .with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)
+                        VariantMutator
+                                .MODEL
+                                .withValue(modelLocation)
+                                .then(VariantMutator.Y_ROT.withValue(Quadrant.R180))
                 );
     }
 

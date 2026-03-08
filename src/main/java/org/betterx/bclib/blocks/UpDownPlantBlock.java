@@ -11,12 +11,11 @@ import org.betterx.wover.loot.api.LootLookupProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
@@ -67,11 +66,13 @@ public abstract class UpDownPlantBlock extends BaseBlockNotFull implements Rende
     @SuppressWarnings("deprecation")
     public BlockState updateShape(
             BlockState state,
-            Direction facing,
-            BlockState neighborState,
-            LevelAccessor world,
+            net.minecraft.world.level.LevelReader world,
+            net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess,
             BlockPos pos,
-            BlockPos neighborPos
+            Direction facing,
+            BlockPos neighborPos,
+            BlockState neighborState,
+            net.minecraft.util.RandomSource randomSource
     ) {
         if (!canSurvive(state, world, pos)) {
             return Blocks.AIR.defaultBlockState();
@@ -95,12 +96,12 @@ public abstract class UpDownPlantBlock extends BaseBlockNotFull implements Rende
             ItemStack stack
     ) {
         super.playerDestroy(world, player, pos, state, blockEntity, stack);
-        world.neighborChanged(pos, Blocks.AIR, pos.below());
+        world.neighborChanged(pos, Blocks.AIR, null);
     }
 
     @Override
     public LootTable.Builder registerBlockLoot(
-            @NotNull ResourceLocation location,
+            @NotNull Identifier location,
             @NotNull LootLookupProvider provider,
             @NotNull ResourceKey<LootTable> tableKey
     ) {

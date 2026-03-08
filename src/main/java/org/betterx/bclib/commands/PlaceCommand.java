@@ -23,7 +23,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceKeyArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
 import net.minecraft.commands.arguments.blocks.BlockInput;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
@@ -37,7 +37,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -51,6 +52,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.storage.TagValueInput;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -82,9 +84,9 @@ class PlaceCommandBuilder {
             CommandBuildContext ctx,
             LiteralArgumentBuilder<CommandSourceStack> command
     ) {
-        final Supplier<RequiredArgumentBuilder<CommandSourceStack, ResourceLocation>> path = () -> Commands.argument(
+        final Supplier<RequiredArgumentBuilder<CommandSourceStack, Identifier>> path = () -> Commands.argument(
                 PATH,
-                ResourceLocationArgument.id()
+                IdentifierArgument.id()
         );
         final Supplier<RequiredArgumentBuilder<CommandSourceStack, PlacementDirections>> placement = () -> Commands.argument(
                 PLACEMENT,
@@ -209,10 +211,10 @@ class PlaceCommandBuilder {
         final String path = StringArgumentType.getString(cc, "path");
         return placeMatchingBlocks(
                 cc,
-                (blocks) -> blocks.holders().filter((holder) -> {
+                (blocks) -> blocks.listElements().filter((holder) -> {
                     final var okey = holder.unwrapKey();
                     if (okey.isPresent()) {
-                        var key = okey.get().location();
+                        var key = okey.get().identifier();
                         return (namespace.trim().equals("*") || key
                                 .getNamespace()
                                 .contains(namespace)) && (path.trim().equals("*") || key.getPath().contains(path));
@@ -255,7 +257,7 @@ class PlaceCommandBuilder {
             final int LENGTH = 16;
             final int HEIGHT = 16;
 
-            final var blocks = WorldState.registryAccess().registry(Registries.BLOCK).orElse(null);
+            final var blocks = WorldState.registryAccess().lookup(Registries.BLOCK).orElse(null);
             final List<Holder<Block>> blockHolders = new LinkedList<>();
             blockSupplier.apply(blocks).forEach(blockHolders::add);
             final ServerLevel world = cc.getSource().getLevel();
@@ -266,7 +268,7 @@ class PlaceCommandBuilder {
             int y = pos.getY();
             int z = pos.getZ();
             for (Holder<Block> entry : blockHolders) {
-                final ResourceLocation key = entry.unwrapKey().orElseThrow().location();
+                final Identifier key = entry.unwrapKey().orElseThrow().identifier();
 
                 final Block block = entry.value();
 
@@ -386,7 +388,7 @@ class PlaceCommandBuilder {
             boolean replaceAir,
             boolean hasRecursionArg
     ) throws CommandSyntaxException {
-        final ResourceLocation id = ResourceLocationArgument.getId(ctx, PATH);
+        final Identifier id = IdentifierArgument.getId(ctx, PATH);
         final PlacementDirections searchDir = TemplatePlacementArgument.getPlacement(ctx, PLACEMENT);
         final BlockInput blockInput = hasBorderArg ? BlockStateArgument.getBlock(ctx, BORDER) : null;
         final BlockPos pos = BlockPosArgument.getLoadedBlockPos(ctx, POS);
@@ -466,7 +468,7 @@ class PlaceCommandBuilder {
             boolean replaceAir,
             boolean hasRecursionArg
     ) throws CommandSyntaxException {
-        final ResourceLocation id = ResourceLocationArgument.getId(ctx, PATH);
+        final Identifier id = IdentifierArgument.getId(ctx, PATH);
         final PlacementDirections searchDir = TemplatePlacementArgument.getPlacement(ctx, PLACEMENT);
         final BlockInput blockInput = hasBorderArg ? BlockStateArgument.getBlock(ctx, BORDER) : null;
         final BlockPos span = Float3ArgumentType.getFloat3(ctx, SPAN).toBlockPos();
@@ -509,11 +511,11 @@ class PlaceCommandBuilder {
                 ctx,
                 PlaceCommand.POOL
         );
-        ResourceLocation connector = ResourceLocationArgument.getId(ctx, CONNECTOR_NAME);
+        Identifier connector = IdentifierArgument.getId(ctx, CONNECTOR_NAME);
         if (connector.getNamespace().equals("-")) {
-            connector = ResourceLocation.fromNamespaceAndPath(pool
+            connector = Identifier.fromNamespaceAndPath(pool
                     .key()
-                    .location()
+                    .identifier()
                     .getNamespace(), connector.getPath());
         }
         BlockState replaceWith = hasReplaceArg
@@ -569,9 +571,9 @@ class PlaceCommandBuilder {
         level.setBlock(pos, Blocks.SPAWNER.defaultBlockState(), BlocksHelper.SET_SILENT);
 
         if (level.getBlockEntity(pos) instanceof SpawnerBlockEntity entity) {
-            CompoundTag tag = TagParser.parseTag(
+            CompoundTag tag = TagParser.parseCompoundFully(
                     "{SpawnData:{entity:{id:wither_skeleton,PersistenceRequired:1,HandItems:[{Count:1,id:netherite_sword},{Count:1,id:shield}],ArmorItems:[{Count:1,id:netherite_boots,tag:{Enchantments:[{id:protection,lvl:1}]}},{Count:1,id:netherite_leggings,tag:{Enchantments:[{id:protection,lvl:1}]}},{Count:1,id:netherite_chestplate,tag:{Enchantments:[{id:protection,lvl:1},{id:thorns,lvl:3}]}},{Count:1,id:netherite_helmet,tag:{Enchantments:[{id:protection,lvl:1}]}}],HandDropChances:[0.0f,0.0f],ArmorDropChances:[0.0f,0.0f,0.0f,0.0f]}, custom_spawn_rules:{sky_light_limit:{max_inclusive:13},block_light_limit:{max_inclusive:11}}},SpawnRange:4,SpawnCount:8,MaxNearbyEntities:18,Delay:499,MinSpawnDelay:300,MaxSpawnDelay:1600,RequiredPlayerRange:20}");
-            entity.loadCustomOnly(tag, ctx.getSource().registryAccess());
+            entity.loadCustomOnly(TagValueInput.create(ProblemReporter.DISCARDING, ctx.getSource().registryAccess(), tag));
         }
 
         return Command.SINGLE_SUCCESS;
@@ -592,7 +594,7 @@ public class PlaceCommand {
     ) {
         final var command = Commands
                 .literal(PLACE_COMMAND)
-                .requires(commandSourceStack -> commandSourceStack.hasPermission(2));
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
 
         new PlaceCommandBuilder().register(commandBuildContext, command);
 
@@ -656,7 +658,7 @@ public class PlaceCommand {
         return bb;
     }
 
-    private static void createControlBlocks(CommandSourceStack stack, ResourceLocation location, BoundingBox bbNBT) {
+    private static void createControlBlocks(CommandSourceStack stack, Identifier location, BoundingBox bbNBT) {
         BlockPos structureBlockPos = new BlockPos(bbNBT.minX() - 1, bbNBT.minY() - 1, bbNBT.minZ() - 1);
         BlockPos commandBlockPos = new BlockPos(bbNBT.minX() - 1, bbNBT.minY() - 1, bbNBT.minZ());
         BlockPos buttonBlockPos = new BlockPos(bbNBT.minX() - 1, bbNBT.minY(), bbNBT.minZ());
@@ -681,8 +683,6 @@ public class PlaceCommand {
         if (stack.getLevel().getBlockEntity(commandBlockPos) instanceof CommandBlockEntity entity) {
             entity.setAutomatic(false);
             entity.setPowered(false);
-            entity.onlyOpCanSetNbt();
-            entity.getCommandBlock().shouldInformAdmins();
             entity.getCommandBlock()
                   .setCommand(
                           "fill ~1 ~1 ~"
@@ -707,7 +707,7 @@ public class PlaceCommand {
             boolean structureBlock,
             boolean replaceAir,
             boolean preFillStructureVoid,
-            ResourceLocation location,
+            Identifier location,
             Function<BlockPos, BoundingBox> getBounds,
             BiConsumer<ServerLevel, BlockPos> generate
     ) {

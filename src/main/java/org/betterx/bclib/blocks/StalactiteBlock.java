@@ -8,25 +8,27 @@ import org.betterx.wover.block.api.BlockProperties;
 import org.betterx.wover.block.api.model.BlockModelProvider;
 import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
 
+import com.mojang.math.Quadrant;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.client.renderer.block.model.VariantMutator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.data.models.blockstates.MultiVariantGenerator;
-import net.minecraft.data.models.blockstates.PropertyDispatch;
-import net.minecraft.data.models.blockstates.Variant;
-import net.minecraft.data.models.blockstates.VariantProperties;
-import net.minecraft.data.models.model.TextureMapping;
-import net.minecraft.data.models.model.TextureSlot;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlockContainer;
@@ -43,10 +45,9 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
 public abstract class StalactiteBlock extends BaseBlockNotFull implements SimpleWaterloggedBlock, LiquidBlockContainer, RenderLayerProvider, BlockModelProvider {
@@ -186,11 +187,13 @@ public abstract class StalactiteBlock extends BaseBlockNotFull implements Simple
     @Override
     public @NotNull BlockState updateShape(
             BlockState state,
-            Direction facing,
-            BlockState neighborState,
-            LevelAccessor world,
+            LevelReader world,
+            ScheduledTickAccess scheduledTickAccess,
             BlockPos pos,
-            BlockPos neighborPos
+            Direction facing,
+            BlockPos neighborPos,
+            BlockState neighborState,
+            RandomSource randomSource
     ) {
         if (!canSurvive(state, world, pos)) {
             return Blocks.AIR.defaultBlockState();
@@ -217,25 +220,24 @@ public abstract class StalactiteBlock extends BaseBlockNotFull implements Simple
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void provideBlockModels(WoverBlockModelGenerators generator) {
-        final ResourceLocation id = TextureMapping.getBlockTexture(this);
-        final var props = PropertyDispatch.properties(IS_FLOOR, SIZE);
+        final Identifier id = TextureMapping.getBlockTexture(this);
+        final var props = PropertyDispatch.initial(IS_FLOOR, SIZE);
         for (int size = 0; size <= 7; size++) {
             final String suffix = "_" + size;
             final TextureMapping mapping = new TextureMapping().put(TextureSlot.CROSS, id.withSuffix(suffix));
-            final ResourceLocation model = BCLModels.CROSS_SHADED.createWithSuffix(this, suffix, mapping, generator.modelOutput());
-            props.select(true, size, Variant.variant().with(VariantProperties.MODEL, model));
-            props.select(false, size, Variant.variant()
-                                             .with(VariantProperties.MODEL, model)
-                                             .with(VariantProperties.X_ROT, VariantProperties.Rotation.R180));
+            final Identifier model = BCLModels.CROSS_SHADED.createWithSuffix(this, suffix, mapping, generator.modelOutput());
+            props.select(true, size, BlockModelGenerators.plainVariant(model));
+            props.select(false, size, BlockModelGenerators
+                    .plainVariant(model)
+                    .with(VariantMutator.X_ROT.withValue(Quadrant.R180)));
         }
-        generator.acceptBlockState(MultiVariantGenerator.multiVariant(this).with(props));
+        generator.acceptBlockState(MultiVariantGenerator.dispatch(this).with(props));
         generator.createFlatItem(this, TextureMapping.getItemTexture(this.asItem()));
     }
 
     @Override
-    public boolean canPlaceLiquid(Player player, BlockGetter world, BlockPos pos, BlockState state, Fluid fluid) {
+    public boolean canPlaceLiquid(@Nullable LivingEntity player, BlockGetter world, BlockPos pos, BlockState state, Fluid fluid) {
         return false;
     }
 

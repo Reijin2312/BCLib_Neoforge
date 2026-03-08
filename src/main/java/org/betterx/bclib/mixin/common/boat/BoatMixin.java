@@ -3,122 +3,100 @@ package org.betterx.bclib.mixin.common.boat;
 import org.betterx.bclib.items.boat.BoatTypeOverride;
 import org.betterx.bclib.items.boat.CustomBoatTypeOverride;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.item.BoatItem;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.boat.AbstractChestBoat;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = Boat.class)
-public abstract class BoatMixin extends Entity implements CustomBoatTypeOverride {
+@Mixin(value = AbstractBoat.class)
+public abstract class BoatMixin implements CustomBoatTypeOverride {
+    @Unique
+    private static final EntityDataAccessor<Integer> BCL_CUSTOM_TYPE = SynchedEntityData.defineId(
+            AbstractBoat.class,
+            EntityDataSerializers.INT
+    );
+    @Unique
+    private static final int BCL_NO_CUSTOM_TYPE = -1;
+
     @Unique
     private BoatTypeOverride bcl_type = null;
-    @Shadow
-    @Final
-    private static EntityDataAccessor<Integer> DATA_ID_TYPE;
 
-    public BoatMixin(EntityType<?> entityType, Level level) {
-        super(entityType, level);
+    @Inject(method = "defineSynchedData", at = @At("TAIL"), remap = false)
+    private void bclib_defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
+        builder.define(BCL_CUSTOM_TYPE, BCL_NO_CUSTOM_TYPE);
     }
 
     @Override
     public void bcl_setCustomType(BoatTypeOverride type) {
         bcl_type = type;
-        if (type == null)
-            this.entityData.set(DATA_ID_TYPE, Boat.Type.OAK.ordinal());
-        else
-            this.entityData.set(DATA_ID_TYPE, bcl_type.ordinal());
+        this.bclib_entityData().set(BCL_CUSTOM_TYPE, type == null ? BCL_NO_CUSTOM_TYPE : type.ordinal());
     }
 
     @Override
     public BoatTypeOverride bcl_getCustomType() {
-        bcl_type = BoatTypeOverride.byId(this.entityData.get(DATA_ID_TYPE));
+        int id = this.bclib_entityData().get(BCL_CUSTOM_TYPE);
+        if (id == BCL_NO_CUSTOM_TYPE) {
+            bcl_type = null;
+            return null;
+        }
+
+        bcl_type = BoatTypeOverride.byId(id);
         return bcl_type;
     }
 
-    @Inject(method = "setVariant(Lnet/minecraft/world/entity/vehicle/Boat$Type;)V", at = @At("HEAD"), cancellable = true)
-    void bcl_setType(Boat.Type type, CallbackInfo ci) {
-        if (bcl_type != null) {
-            this.entityData.set(DATA_ID_TYPE, bcl_type.ordinal());
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "getVariant()Lnet/minecraft/world/entity/vehicle/Boat$Type;", at = @At("HEAD"), cancellable = true)
-    void bcl_getBoatType(CallbackInfoReturnable<Boat.Type> cir) {
-        BoatTypeOverride type = BoatTypeOverride.byId(this.entityData.get(DATA_ID_TYPE));
-        if (type != null) {
-            bcl_type = type;
-            cir.setReturnValue(Boat.Type.OAK);
-        }
-    }
-
-
-    @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
-    void bcl_addAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
+    @Inject(method = "addAdditionalSaveData", at = @At("HEAD"), remap = false)
+    private void bclib_addAdditionalSaveData(ValueOutput valueOutput, CallbackInfo ci) {
         BoatTypeOverride type = this.bcl_getCustomType();
         if (type != null) {
-            compoundTag.putString("cType", type.name());
+            valueOutput.putString("cType", type.name());
         }
     }
 
-    @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
-    void bcl_readAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
-        if (compoundTag.contains("cType")) {
-            this.bcl_setCustomType(BoatTypeOverride.byName(compoundTag.getString("cType")));
-        } else {
-            this.bcl_setCustomType(null);
-        }
+    @Inject(method = "readAdditionalSaveData", at = @At("HEAD"), remap = false)
+    private void bclib_readAdditionalSaveData(ValueInput valueInput, CallbackInfo ci) {
+        this.bcl_setCustomType(valueInput.getString("cType").map(BoatTypeOverride::byName).orElse(null));
     }
 
-    @Inject(method = "getDropItem", at = @At("HEAD"), cancellable = true)
-    void bcl_getDropItem(CallbackInfoReturnable<Item> cir) {
+    @Inject(method = "getDropItem", at = @At("HEAD"), cancellable = true, remap = false)
+    private void bclib_getDropItem(CallbackInfoReturnable<Item> cir) {
         BoatTypeOverride type = this.bcl_getCustomType();
-        if (type != null) {
-            BoatItem boat = type.getBoatItem();
-            if (boat != null) {
-                cir.setReturnValue(boat);
-            }
+        if (type == null) {
+            return;
+        }
+
+        Item customItem = (Object) this instanceof AbstractChestBoat ? type.getChestBoatItem() : type.getBoatItem();
+        if (customItem != null) {
+            cir.setReturnValue(customItem);
         }
     }
 
-    @Inject(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;kill()V", shift = At.Shift.AFTER), cancellable = true)
-    void bcl_checkFallDamage(double d, boolean bl, BlockState blockState, BlockPos blockPos, CallbackInfo ci) {
+    @Inject(method = "getPickResult", at = @At("HEAD"), cancellable = true, remap = false)
+    private void bclib_getPickResult(CallbackInfoReturnable<ItemStack> cir) {
         BoatTypeOverride type = this.bcl_getCustomType();
-        if (type != null) {
-            if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-                for (int i = 0; i < 3; ++i) {
-                    this.spawnAtLocation(type.getPlanks());
-                }
-                for (int i = 0; i < 2; ++i) {
-                    this.spawnAtLocation(Items.STICK);
-                }
+        if (type == null) {
+            return;
+        }
 
-                this.resetFallDistance();
-                ci.cancel();
-            }
-
-
+        Item customItem = (Object) this instanceof AbstractChestBoat ? type.getChestBoatItem() : type.getBoatItem();
+        if (customItem != null) {
+            cir.setReturnValue(new ItemStack(customItem));
         }
     }
 
+    @Unique
+    private SynchedEntityData bclib_entityData() {
+        return ((AbstractBoat) (Object) this).getEntityData();
+    }
 }
-
-
-

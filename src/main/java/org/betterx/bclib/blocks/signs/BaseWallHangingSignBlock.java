@@ -6,7 +6,7 @@ import org.betterx.bclib.behaviours.interfaces.BehaviourWood;
 import org.betterx.wover.block.api.BlockTagProvider;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WallHangingSignBlock;
@@ -21,7 +21,7 @@ public abstract class BaseWallHangingSignBlock extends WallHangingSignBlock impl
     }
 
     @Override
-    public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+    public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
         context.add(this, BlockTags.WALL_HANGING_SIGNS);
     }
 

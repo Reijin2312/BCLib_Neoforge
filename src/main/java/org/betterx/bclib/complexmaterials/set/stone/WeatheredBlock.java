@@ -7,7 +7,7 @@ import org.betterx.bclib.complexmaterials.entry.SimpleMaterialSlot;
 import org.betterx.wover.recipe.api.RecipeBuilder;
 
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -26,9 +26,9 @@ public class WeatheredBlock extends SimpleMaterialSlot<StoneComplexMaterial> {
     }
 
     @Override
-    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, ResourceLocation id) {
+    protected @Nullable void makeRecipe(RecipeOutput context, ComplexMaterial parentMaterial, Identifier id) {
         RecipeBuilder.crafting(
-                             ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_from_moss"),
+                             Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_from_moss"),
                              parentMaterial.getBlock(suffix)
                      )
                      .shapeless()
@@ -37,7 +37,7 @@ public class WeatheredBlock extends SimpleMaterialSlot<StoneComplexMaterial> {
                      .build(context);
 
         RecipeBuilder.crafting(
-                             ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_from_vine"),
+                             Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_from_vine"),
                              parentMaterial.getBlock(suffix)
                      )
                      .shapeless()

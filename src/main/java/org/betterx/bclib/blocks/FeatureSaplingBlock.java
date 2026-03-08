@@ -12,12 +12,11 @@ import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SaplingBlock;
@@ -29,8 +28,6 @@ import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfigur
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +55,7 @@ public class FeatureSaplingBlock<F extends Feature<FC>, FC extends FeatureConfig
     public FeatureSaplingBlock(int light, FeatureSupplier<F, FC> featureSupplier) {
         this(
                 BehaviourBuilders.createPlant().randomTicks()
-                                 .noCollission()
+                                 .noCollision()
                                  .lightLevel(state -> light)
                                  .sound(SoundType.GRASS),
                 featureSupplier
@@ -88,11 +85,13 @@ public class FeatureSaplingBlock<F extends Feature<FC>, FC extends FeatureConfig
     @Override
     public BlockState updateShape(
             BlockState state,
-            Direction facing,
-            BlockState neighborState,
-            LevelAccessor world,
+            net.minecraft.world.level.LevelReader world,
+            net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess,
             BlockPos pos,
-            BlockPos neighborPos
+            Direction facing,
+            BlockPos neighborPos,
+            BlockState neighborState,
+            net.minecraft.util.RandomSource randomSource
     ) {
         if (!canSurvive(state, world, pos)) return Blocks.AIR.defaultBlockState();
         else return state;
@@ -156,14 +155,12 @@ public class FeatureSaplingBlock<F extends Feature<FC>, FC extends FeatureConfig
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation resourceLocation) {
+    public BlockModel getItemModel(Identifier resourceLocation) {
         return ModelsHelper.createBlockItem(resourceLocation);
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public @Nullable BlockModel getBlockModel(ResourceLocation resourceLocation, BlockState blockState) {
+    public @Nullable BlockModel getBlockModel(Identifier resourceLocation, BlockState blockState) {
         Optional<String> pattern = PatternsHelper.createJson(BasePatterns.BLOCK_CROSS, resourceLocation);
         return ModelsHelper.fromPattern(pattern);
     }
@@ -173,4 +170,3 @@ public class FeatureSaplingBlock<F extends Feature<FC>, FC extends FeatureConfig
         return SHAPE;
     }
 }
-

@@ -19,11 +19,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,9 +35,8 @@ import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.TagValueInput;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,7 +44,7 @@ import java.util.function.Supplier;
 
 public class DebugDataItem extends Item implements ItemModelProvider, AirSelectionItem {
 
-    public static final ResourceLocation DEFAULT_ICON = ResourceLocation.withDefaultNamespace("stick");
+    public static final Identifier DEFAULT_ICON = Identifier.withDefaultNamespace("stick");
 
     public static InteractionResult fillStructureEntityBounds(
             UseOnContext useOnContext,
@@ -158,14 +157,14 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
     }
 
     protected final DebugInteraction interaction;
-    protected final ResourceLocation icon;
+    protected final Identifier icon;
     public final boolean placeInAir;
 
-    public DebugDataItem(DebugEntityInteraction interaction, boolean placeInAir, ResourceLocation icon) {
+    public DebugDataItem(DebugEntityInteraction interaction, boolean placeInAir, Identifier icon) {
         this((DebugInteraction) interaction, placeInAir, icon);
     }
 
-    public DebugDataItem(DebugInteraction interaction, boolean placeInAir, ResourceLocation icon) {
+    public DebugDataItem(DebugInteraction interaction, boolean placeInAir, Identifier icon) {
         super(new Item.Properties().fireResistant().stacksTo(1));
 
         this.interaction = interaction;
@@ -185,8 +184,7 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
 
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation resourceLocation) {
+    public BlockModel getItemModel(Identifier resourceLocation) {
         return ModelsHelper.createItemModel(icon);
     }
 
@@ -212,27 +210,26 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
         }
     }
 
-    @Override
     public boolean canAttackBlock(BlockState blockState, Level level, BlockPos blockPos, Player player) {
         return true;
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand interactionHand) {
+    public InteractionResult use(Level level, Player player, InteractionHand interactionHand) {
         return AirSelectionItem.super.useOnAir(level, player, interactionHand);
     }
 
     public static DebugDataItem forLootTable(ResourceKey<LootTable> table, Item icon) {
-        ResourceLocation iconId = BuiltInRegistries.ITEM.getKey(icon);
+        Identifier iconId = BuiltInRegistries.ITEM.getKey(icon);
         return new DebugDataItem(
                 (player, entity, ctx) -> {
                     CompoundTag tag = entity.saveWithoutMetadata(player.registryAccess());
                     tag.remove(RandomizableContainerBlockEntity.LOOT_TABLE_SEED_TAG);
                     tag.remove("Items");
 
-                    tag.putString(RandomizableContainerBlockEntity.LOOT_TABLE_TAG, table.location().toString());
+                    tag.putString(RandomizableContainerBlockEntity.LOOT_TABLE_TAG, table.identifier().toString());
 
-                    entity.loadCustomOnly(tag, player.registryAccess());
+                    entity.loadCustomOnly(TagValueInput.create(ProblemReporter.DISCARDING, player.registryAccess(), tag));
                     message(player, "Did set Loot Table to " + table.toString());
                     return InteractionResult.SUCCESS;
                 },
@@ -242,11 +239,11 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
     }
 
     public static DebugDataItem forSpawner(Supplier<CompoundTag> tag, Item icon) {
-        ResourceLocation iconId = BuiltInRegistries.ITEM.getKey(icon);
+        Identifier iconId = BuiltInRegistries.ITEM.getKey(icon);
         return new DebugDataItem(
                 (player, entity, ctx) -> {
                     if (entity instanceof SpawnerBlockEntity) {
-                        entity.loadCustomOnly(tag.get(), player.registryAccess());
+                        entity.loadCustomOnly(TagValueInput.create(ProblemReporter.DISCARDING, player.registryAccess(), tag.get()));
                         message(player, "Did set Data to " + tag.toString());
                         return InteractionResult.SUCCESS;
                     }
@@ -264,7 +261,7 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
     ) {
         return forJigsaw(
                 pool == null ? Pools.EMPTY : pool,
-                ResourceLocation.fromNamespaceAndPath(modID, "street"),
+                Identifier.fromNamespaceAndPath(modID, "street"),
                 JigsawBlockEntity.JointType.ALIGNED,
                 null,
                 null,
@@ -280,11 +277,11 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
         return forJigsaw(
                 pool == null ? Pools.EMPTY : pool,
                 pool == null
-                        ? ResourceLocation.fromNamespaceAndPath(modID, "building_entrance")
-                        : ResourceLocation.fromNamespaceAndPath(modID, "street_entrance"),
+                        ? Identifier.fromNamespaceAndPath(modID, "building_entrance")
+                        : Identifier.fromNamespaceAndPath(modID, "street_entrance"),
                 pool == null
-                        ? ResourceLocation.fromNamespaceAndPath(modID, "street_entrance")
-                        : ResourceLocation.fromNamespaceAndPath(modID, "building_entrance"),
+                        ? Identifier.fromNamespaceAndPath(modID, "street_entrance")
+                        : Identifier.fromNamespaceAndPath(modID, "building_entrance"),
                 JigsawBlockEntity.JointType.ALIGNED,
                 null,
                 null,
@@ -300,11 +297,11 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
         return forJigsaw(
                 pool == null ? Pools.EMPTY : pool,
                 pool == null
-                        ? ResourceLocation.fromNamespaceAndPath(modID, "side")
-                        : ResourceLocation.fromNamespaceAndPath(modID, "side_street"),
+                        ? Identifier.fromNamespaceAndPath(modID, "side")
+                        : Identifier.fromNamespaceAndPath(modID, "side_street"),
                 pool == null
-                        ? ResourceLocation.fromNamespaceAndPath(modID, "side_street")
-                        : ResourceLocation.fromNamespaceAndPath(modID, "side"),
+                        ? Identifier.fromNamespaceAndPath(modID, "side_street")
+                        : Identifier.fromNamespaceAndPath(modID, "side"),
                 JigsawBlockEntity.JointType.ALIGNED,
                 null,
                 null,
@@ -320,11 +317,11 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
         return forJigsaw(
                 pool == null ? Pools.EMPTY : pool,
                 pool == null
-                        ? ResourceLocation.fromNamespaceAndPath(modID, "bottom")
-                        : ResourceLocation.fromNamespaceAndPath(modID, "bottom_street"),
+                        ? Identifier.fromNamespaceAndPath(modID, "bottom")
+                        : Identifier.fromNamespaceAndPath(modID, "bottom_street"),
                 pool == null
-                        ? ResourceLocation.fromNamespaceAndPath(modID, "bottom_street")
-                        : ResourceLocation.fromNamespaceAndPath(modID, "bottom"),
+                        ? Identifier.fromNamespaceAndPath(modID, "bottom_street")
+                        : Identifier.fromNamespaceAndPath(modID, "bottom"),
                 JigsawBlockEntity.JointType.ROLLABLE,
                 null,
                 pool == null ? FrontAndTop.DOWN_WEST : FrontAndTop.UP_WEST,
@@ -334,7 +331,7 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
 
     public static DebugDataItem forJigsaw(
             ResourceKey<StructureTemplatePool> pool,
-            ResourceLocation connector,
+            Identifier connector,
             JigsawBlockEntity.JointType type,
             BlockState finalState,
             FrontAndTop forceOrientation,
@@ -345,14 +342,14 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
 
     public static DebugDataItem forJigsaw(
             ResourceKey<StructureTemplatePool> pool,
-            ResourceLocation name,
-            ResourceLocation target,
+            Identifier name,
+            Identifier target,
             JigsawBlockEntity.JointType type,
             BlockState finalState,
             FrontAndTop forceOrientation,
             Item icon
     ) {
-        ResourceLocation iconId = BuiltInRegistries.ITEM.getKey(icon);
+        Identifier iconId = BuiltInRegistries.ITEM.getKey(icon);
         return new DebugDataItem(
                 (ctx) -> {
                     final var player = ctx.getPlayer();
@@ -407,4 +404,3 @@ public class DebugDataItem extends Item implements ItemModelProvider, AirSelecti
         boolean test(BlockState state);
     }
 }
-

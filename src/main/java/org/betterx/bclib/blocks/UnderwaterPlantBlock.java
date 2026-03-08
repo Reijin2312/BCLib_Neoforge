@@ -8,11 +8,10 @@ import org.betterx.wover.loot.api.LootLookupProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -42,7 +41,7 @@ public abstract class UnderwaterPlantBlock extends BaseBlockNotFull implements R
     @Override
     @SuppressWarnings("deprecation")
     public VoxelShape getShape(BlockState state, BlockGetter view, BlockPos pos, CollisionContext ePos) {
-        Vec3 vec3d = state.getOffset(view, pos);
+        Vec3 vec3d = state.getOffset(pos);
         return SHAPE.move(vec3d.x, vec3d.y, vec3d.z);
     }
 
@@ -67,14 +66,16 @@ public abstract class UnderwaterPlantBlock extends BaseBlockNotFull implements R
     @SuppressWarnings("deprecation")
     public @NotNull BlockState updateShape(
             BlockState state,
-            Direction facing,
-            BlockState neighborState,
-            LevelAccessor world,
+            net.minecraft.world.level.LevelReader world,
+            net.minecraft.world.level.ScheduledTickAccess scheduledTickAccess,
             BlockPos pos,
-            BlockPos neighborPos
+            Direction facing,
+            BlockPos neighborPos,
+            BlockState neighborState,
+            net.minecraft.util.RandomSource randomSource
     ) {
         if (!canSurvive(state, world, pos)) {
-            world.scheduleTick(pos, this, 1);
+            scheduledTickAccess.scheduleTick(pos, this, 1);
         }
 
         return state;
@@ -110,7 +111,7 @@ public abstract class UnderwaterPlantBlock extends BaseBlockNotFull implements R
 
     @Override
     public boolean canPlaceLiquid(
-            @Nullable Player player,
+            @Nullable net.minecraft.world.entity.LivingEntity player,
             BlockGetter world,
             BlockPos pos,
             BlockState state,
@@ -132,7 +133,7 @@ public abstract class UnderwaterPlantBlock extends BaseBlockNotFull implements R
 
     @Override
     public LootTable.Builder registerBlockLoot(
-            @NotNull ResourceLocation location,
+            @NotNull Identifier location,
             @NotNull LootLookupProvider provider,
             @NotNull ResourceKey<LootTable> tableKey
     ) {

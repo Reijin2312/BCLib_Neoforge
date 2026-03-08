@@ -4,10 +4,10 @@ import org.betterx.bclib.complexmaterials.ComplexMaterial;
 import org.betterx.bclib.interfaces.TriConsumer;
 
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class RecipeEntry extends ComplexMaterialEntry {
-    public interface RecipeConsumer extends TriConsumer<RecipeOutput, ComplexMaterial, ResourceLocation> {
+    public interface RecipeConsumer extends TriConsumer<RecipeOutput, ComplexMaterial, Identifier> {
     }
 
     final RecipeConsumer initFunction;

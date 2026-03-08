@@ -4,26 +4,22 @@ import org.betterx.bclib.client.models.ModelsHelper;
 import org.betterx.bclib.interfaces.ItemModelProvider;
 
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.Tier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ToolMaterial;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-public class BaseSwordItem extends SwordItem implements ItemModelProvider {
-    public BaseSwordItem(Tier material, Properties settings) {
-        super(material, settings);
+public class BaseSwordItem extends Item implements ItemModelProvider {
+    public BaseSwordItem(ToolMaterial material, Properties settings) {
+        super(settings.sword(material, 3.0F, -2.4F));
     }
 
-    public BaseSwordItem(Tier material, int attackDamage, float attackSpeed, Properties settings) {
-        this(material, settings.attributes(SwordItem.createAttributes(material, attackDamage, attackSpeed)));
+    public BaseSwordItem(ToolMaterial material, int attackDamage, float attackSpeed, Properties settings) {
+        super(settings.sword(material, attackDamage, attackSpeed));
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public BlockModel getItemModel(ResourceLocation resourceLocation) {
+    public BlockModel getItemModel(Identifier resourceLocation) {
         return ModelsHelper.createHandheldItem(resourceLocation);
     }
 }
-

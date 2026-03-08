@@ -15,8 +15,8 @@ public abstract class ComplexMaterialEntry {
         return baseName + "_" + suffix;
     }
 
-//    public ResourceLocation getLocation(String modID, String baseName) {
-//        return ResourceLocation.fromNamespaceAndPath(modID, getName(baseName));
+//    public Identifier getLocation(String modID, String baseName) {
+//        return Identifier.fromNamespaceAndPath(modID, getName(baseName));
 //    }
 
     public String getSuffix() {

@@ -31,19 +31,19 @@ public class StructureWorld {
     }
 
     public StructureWorld(CompoundTag tag) {
-        minX = tag.getInt("minX");
-        maxX = tag.getInt("maxX");
-        minY = tag.getInt("minY");
-        maxY = tag.getInt("maxY");
-        minZ = tag.getInt("minZ");
-        maxZ = tag.getInt("maxZ");
+        minX = tag.getIntOr("minX", Integer.MAX_VALUE);
+        maxX = tag.getIntOr("maxX", Integer.MIN_VALUE);
+        minY = tag.getIntOr("minY", Integer.MAX_VALUE);
+        maxY = tag.getIntOr("maxY", Integer.MIN_VALUE);
+        minZ = tag.getIntOr("minZ", Integer.MAX_VALUE);
+        maxZ = tag.getIntOr("maxZ", Integer.MIN_VALUE);
 
-        ListTag map = tag.getList("parts", 10);
+        ListTag map = tag.getListOrEmpty("parts");
         map.forEach((element) -> {
             CompoundTag compound = (CompoundTag) element;
             Part part = new Part(compound);
-            int x = compound.getInt("x");
-            int z = compound.getInt("z");
+            int x = compound.getIntOr("x", 0);
+            int z = compound.getIntOr("z", 0);
             parts.put(new ChunkPos(x, z), part);
         });
     }
@@ -114,21 +114,21 @@ public class StructureWorld {
         }
 
         public Part(CompoundTag tag) {
-            ListTag map = tag.getList("blocks", 10);
-            ListTag map2 = tag.getList("states", 10);
+            ListTag map = tag.getListOrEmpty("blocks");
+            ListTag map2 = tag.getListOrEmpty("states");
             BlockState[] states = new BlockState[map2.size()];
             for (int i = 0; i < states.length; i++) {
                 states[i] = NbtUtils.readBlockState(
-                        BuiltInRegistries.BLOCK.asLookup(),
+                        BuiltInRegistries.BLOCK,
                         (CompoundTag) map2.get(i)
                 );
             }
 
             map.forEach((element) -> {
                 CompoundTag block = (CompoundTag) element;
-                BlockPos pos = NbtUtils.readBlockPos(block, "pos").orElse(null);
+                BlockPos pos = block.read("pos", BlockPos.CODEC).orElse(null);
                 if (pos != null) {
-                    int stateID = block.getInt("state");
+                    int stateID = block.getIntOr("state", 0);
                     BlockState state = stateID < states.length ? states[stateID] : Block.stateById(stateID);
                     blocks.put(pos, state);
                 }
@@ -142,7 +142,7 @@ public class StructureWorld {
 
         void placeChunk(ChunkAccess chunk) {
             blocks.forEach((pos, state) -> {
-                chunk.setBlockState(pos, state, false);
+                chunk.setBlockState(pos, state, 3);
             });
         }
 
@@ -159,7 +159,7 @@ public class StructureWorld {
             Map<BlockState, Integer> states = Maps.newHashMap();
 
             blocks.forEach((pos, state) -> {
-                int stateID = states.getOrDefault(states, -1);
+                int stateID = states.getOrDefault(state, -1);
                 if (stateID < 0) {
                     stateID = id[0]++;
                     states.put(state, stateID);
@@ -167,7 +167,7 @@ public class StructureWorld {
                 }
 
                 CompoundTag block = new CompoundTag();
-                block.put("pos", NbtUtils.writeBlockPos(pos));
+                block.store("pos", BlockPos.CODEC, pos);
                 block.putInt("state", stateID);
                 map.add(block);
             });

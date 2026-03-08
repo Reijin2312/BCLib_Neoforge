@@ -8,23 +8,23 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public final class BCLibPayload implements CustomPacketPayload {
-    public static final Type<BCLibPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(BCLib.MOD_ID, "dataexchange"));
+    public static final Type<BCLibPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(BCLib.MOD_ID, "dataexchange"));
     public static final StreamCodec<RegistryFriendlyByteBuf, BCLibPayload> STREAM_CODEC = StreamCodec.of(
             (buf, payload) -> encode(payload, buf),
             buf -> decode(buf)
     );
-    private final ResourceLocation id;
+    private final Identifier id;
     private final byte[] data;
 
-    public BCLibPayload(ResourceLocation id, byte[] data) {
+    public BCLibPayload(Identifier id, byte[] data) {
         this.id = id;
         this.data = data;
     }
 
-    public ResourceLocation id() {
+    public Identifier id() {
         return id;
     }
 
@@ -62,12 +62,12 @@ public final class BCLibPayload implements CustomPacketPayload {
     }
 
     public static void encode(BCLibPayload payload, FriendlyByteBuf buf) {
-        buf.writeResourceLocation(payload.id);
+        buf.writeIdentifier(payload.id);
         buf.writeByteArray(payload.data);
     }
 
     public static BCLibPayload decode(FriendlyByteBuf buf) {
-        ResourceLocation id = buf.readResourceLocation();
+        Identifier id = buf.readIdentifier();
         byte[] data = buf.readByteArray();
         return new BCLibPayload(id, data);
     }

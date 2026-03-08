@@ -36,5 +36,3 @@ public class WoodSlots {
     public static final MaterialSlot<WoodenComplexMaterial> BAR_STOOL = new BarStool();
     public static final MaterialSlot<WoodenComplexMaterial> WALL = new Wall();
 }
-
-

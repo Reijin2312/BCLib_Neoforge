@@ -50,6 +50,3 @@ public interface SurfaceRulesContextAccessor {
     @Accessor(value = "randomState")
     RandomState getRandomState();
 }
-
-
-

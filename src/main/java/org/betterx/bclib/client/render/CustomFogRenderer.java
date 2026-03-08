@@ -6,8 +6,8 @@ import org.betterx.bclib.util.MHelper;
 import org.betterx.wover.biome.api.BiomeManager;
 import org.betterx.wover.biome.api.data.BiomeData;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
@@ -27,6 +27,18 @@ public class CustomFogRenderer {
     private static float fogStart = 0;
     private static float fogEnd = 192;
 
+    public static void applyFogDensity(Camera camera, float viewDistance, FogData fogData) {
+        boolean thickFog = fogData != null && fogData.environmentalEnd < viewDistance;
+        if (applyFogDensity(camera, viewDistance, thickFog) && fogData != null) {
+            fogData.environmentalStart = fogStart;
+            fogData.renderDistanceStart = fogStart;
+            fogData.environmentalEnd = fogEnd;
+            fogData.renderDistanceEnd = fogEnd;
+            fogData.skyEnd = fogEnd;
+            fogData.cloudEnd = fogEnd;
+        }
+    }
+
     public static boolean applyFogDensity(Camera camera, float viewDistance, boolean thickFog) {
         if (!Configs.CLIENT_CONFIG.renderCustomFog()) {
             return false;
@@ -37,7 +49,7 @@ public class CustomFogRenderer {
             BackgroundInfo.fogDensity = 1;
             return false;
         }
-        Entity entity = camera.getEntity();
+        Entity entity = camera.entity();
 
         if (!isForcedDimension(entity.level()) && shouldIgnoreArea(
                 entity.level(),
@@ -84,9 +96,6 @@ public class CustomFogRenderer {
                 BackgroundInfo.blindness = 0;
             }
         }
-        RenderSystem.setShaderFogStart(fogStart);
-        RenderSystem.setShaderFogEnd(fogEnd);
-
         return true;
     }
 

@@ -5,7 +5,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderOwner;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 
 import java.util.Optional;
@@ -43,7 +43,7 @@ public class FullReferenceHolder<T> implements Holder<T> {
 
     public static <T> FullReferenceHolder<T> create(
             ResourceKey<Registry<T>> owner,
-            ResourceLocation id,
+            Identifier id,
             @Nullable T object
     ) {
         return new FullReferenceHolder<>(owner, ResourceKey.create(owner, id), object);
@@ -68,8 +68,8 @@ public class FullReferenceHolder<T> implements Holder<T> {
     }
 
     @Override
-    public boolean is(ResourceLocation resourceLocation) {
-        return this.key().location().equals(resourceLocation);
+    public boolean is(Identifier resourceLocation) {
+        return this.key().identifier().equals(resourceLocation);
     }
 
     @Override

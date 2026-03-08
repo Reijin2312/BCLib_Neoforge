@@ -7,7 +7,7 @@ import org.betterx.bclib.items.boat.BoatTypeOverride;
 import org.betterx.wover.core.api.ModCore;
 import org.betterx.wover.tag.api.TagManager;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
 
 public class WoodenComplexMaterial extends ComplexMaterialSet<WoodenComplexMaterial> {
-    public static final ResourceLocation MATERIAL_ID = BCLib.makeID("wooden_material");
+    public static final Identifier MATERIAL_ID = BCLib.makeID("wooden_material");
 
     public static final String BLOCK_CRAFTING_TABLE = WoodSlots.CRAFTING_TABLE.suffix;
     public static final String BLOCK_STRIPPED_BARK = WoodSlots.STRIPPED_BARK.suffix;
@@ -111,7 +111,7 @@ public class WoodenComplexMaterial extends ComplexMaterialSet<WoodenComplexMater
     }
 
     @Override
-    public ResourceLocation getMaterialID() {
+    public Identifier getMaterialID() {
         return MATERIAL_ID;
     }
 

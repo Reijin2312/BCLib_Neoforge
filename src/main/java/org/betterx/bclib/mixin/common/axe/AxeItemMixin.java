@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Mixin(value = AxeItem.class)
 public class AxeItemMixin {
-    @Inject(method = "getStripped", at = @At("HEAD"), cancellable = true)
+    @Inject(remap = false, method = "getStripped", at = @At("HEAD"), cancellable = true)
     void bclib_getStripped(BlockState blockState, CallbackInfoReturnable<Optional<BlockState>> cir) {
         final Block block = blockState.getBlock();
         if (block instanceof AxeCanStrip stripable) {
@@ -23,6 +23,3 @@ public class AxeItemMixin {
         }
     }
 }
-
-
-

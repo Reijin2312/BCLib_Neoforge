@@ -10,12 +10,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import org.jetbrains.annotations.Nullable;
 
-@OnlyIn(Dist.CLIENT)
 public class ConfirmFixScreen extends BCLibLayoutScreen {
     protected final ConfirmFixScreen.Listener listener;
     private final Component description;
@@ -60,9 +57,7 @@ public class ConfirmFixScreen extends BCLibLayoutScreen {
         return grid;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public interface Listener {
         void proceed(boolean createBackup, boolean applyPatches);
     }
 }
-

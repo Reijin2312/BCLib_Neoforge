@@ -7,11 +7,8 @@ import de.ambertation.wunderlib.ui.layout.values.Value;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 
-@OnlyIn(Dist.CLIENT)
 public class ConfirmRestartScreen extends BCLibLayoutScreen {
     private final Component description;
     private final ConfirmRestartScreen.Listener listener;
@@ -45,9 +42,7 @@ public class ConfirmRestartScreen extends BCLibLayoutScreen {
         return grid;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public interface Listener {
         void proceed();
     }
 }
-

@@ -13,7 +13,7 @@ import org.betterx.wover.tag.api.predefined.CommonBlockTags;
 import org.betterx.wover.tag.api.predefined.MineableTags;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 
@@ -117,7 +117,7 @@ public class BCLAutoBlockTagProvider extends WoverTagProvider.ForBlocks implemen
             FuelRegistry.INSTANCE.add(block, fl.getFuelTime());
         }
 
-        final ResourceLocation location = BuiltInRegistries.BLOCK.getKey(block);
+        final Identifier location = BuiltInRegistries.BLOCK.getKey(block);
         if (!location.getNamespace().equals("minecraft")) {
             if (!(block instanceof HasMinableBehaviour) && block.defaultBlockState()
                                                                 .requiresCorrectToolForDrops()) {
@@ -139,4 +139,3 @@ public class BCLAutoBlockTagProvider extends WoverTagProvider.ForBlocks implemen
         processCommonBlockTags(context, modCore);
     }
 }
-

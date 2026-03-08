@@ -14,6 +14,3 @@ public interface ComposterBlockAccessor {
         throw new AssertionError("@Accessor dummy body called");
     }
 }
-
-
-

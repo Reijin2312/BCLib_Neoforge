@@ -7,7 +7,7 @@ import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Block;
@@ -43,7 +43,7 @@ public abstract class BaseStripableBarkBlock extends BaseBarkBlock implements Ax
         }
 
         @Override
-        public void registerBlockTags(ResourceLocation location, TagBootstrapContext<Block> context) {
+        public void registerBlockTags(Identifier location, TagBootstrapContext<Block> context) {
             context.add(this, BlockTags.LOGS);
             if (flammable) {
                 context.add(this, BlockTags.LOGS_THAT_BURN);
@@ -51,7 +51,7 @@ public abstract class BaseStripableBarkBlock extends BaseBarkBlock implements Ax
         }
 
         @Override
-        public void registerItemTags(ResourceLocation location, ItemTagBootstrapContext context) {
+        public void registerItemTags(Identifier location, ItemTagBootstrapContext context) {
             context.add(this, ItemTags.LOGS);
             if (flammable) {
                 context.add(this, ItemTags.LOGS_THAT_BURN);

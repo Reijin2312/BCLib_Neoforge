@@ -2,7 +2,6 @@ package org.betterx.bclib.mixin.common;
 
 import net.minecraft.core.HolderSet;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
@@ -12,7 +11,6 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -32,11 +30,8 @@ public interface BiomeGenerationSettingsAccessor {
     void bclib_setFlowerFeatures(Supplier<List<ConfiguredFeature<?, ?>>> flowerFeatures);
 
     @Accessor(value = "carvers")
-    Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> bclib_getCarvers();
+    HolderSet<ConfiguredWorldCarver<?>> bclib_getCarvers();
 
     @Accessor(value = "carvers")
-    void bclib_setCarvers(Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> features);
+    void bclib_setCarvers(HolderSet<ConfiguredWorldCarver<?>> features);
 }
-
-
-
