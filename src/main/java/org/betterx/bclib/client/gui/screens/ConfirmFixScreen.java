@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 public class ConfirmFixScreen extends BCLibLayoutScreen {
     protected final ConfirmFixScreen.Listener listener;
     private final Component description;
+    private boolean resolved;
     protected int id;
 
     public ConfirmFixScreen(@Nullable Screen parent, ConfirmFixScreen.Listener listener) {
@@ -30,6 +31,11 @@ public class ConfirmFixScreen extends BCLibLayoutScreen {
 
     public boolean shouldCloseOnEsc() {
         return true;
+    }
+
+    @Override
+    public void onClose() {
+        resolve(false, false);
     }
 
     @Override
@@ -52,12 +58,18 @@ public class ConfirmFixScreen extends BCLibLayoutScreen {
         grid.addSpacer(20);
 
         HorizontalStack row = grid.addRow().centerHorizontal();
-        row.addButton(fit(), fit(), CommonComponents.GUI_CANCEL).onPress((button) -> onClose());
+        row.addButton(fit(), fit(), CommonComponents.GUI_CANCEL).onPress((button) -> resolve(false, false));
         row.addSpacer(4);
         row.addButton(fit(), fit(), CommonComponents.GUI_PROCEED)
-           .onPress((button) -> this.listener.proceed(backup.isChecked(), fix.isChecked()));
+           .onPress((button) -> resolve(backup.isChecked(), fix.isChecked()));
 
         return grid;
+    }
+
+    private void resolve(boolean createBackup, boolean applyPatches) {
+        if (resolved) return;
+        resolved = true;
+        this.listener.proceed(createBackup, applyPatches);
     }
 
     @OnlyIn(Dist.CLIENT)

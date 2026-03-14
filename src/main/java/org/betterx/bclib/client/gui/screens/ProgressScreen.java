@@ -9,6 +9,7 @@ import org.betterx.bclib.BCLib;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -183,18 +184,21 @@ public class ProgressScreen extends LayoutScreen implements ProgressListener, At
 
     @Override
     public void progressStage(Component text) {
-        stageComponent = text;
-        if (stage != null) stage.setText(text);
-        if (stageRow != null) stageRow.reCalculateLayout();
+        runOnGameThread(() -> {
+            stageComponent = text;
+            if (stage != null) stage.setText(text);
+            if (stageRow != null) stageRow.reCalculateLayout();
+        });
     }
 
     @Override
     public void progressStagePercentage(int progress) {
-        if (progress != currentProgress) {
+        if (progress == currentProgress) return;
+        runOnGameThread(() -> {
             currentProgress = progress;
             if (progressImage != null) progressImage.percentage = currentProgress / 100.0f;
             if (this.progress != null) this.progress.setText(getProgressComponent());
-        }
+        });
     }
 
     @Override
@@ -238,5 +242,14 @@ public class ProgressScreen extends LayoutScreen implements ProgressListener, At
         grid.addFiller();
 
         return grid;
+    }
+
+    private static void runOnGameThread(Runnable runner) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.isSameThread()) {
+            runner.run();
+        } else {
+            client.execute(runner);
+        }
     }
 }

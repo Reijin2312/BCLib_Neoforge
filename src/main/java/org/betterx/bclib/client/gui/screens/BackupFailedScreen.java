@@ -10,22 +10,24 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
+import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 
 @OnlyIn(Dist.CLIENT)
 public class BackupFailedScreen extends BCLibLayoutScreen {
     private final Runnable onBack;
     private final Runnable onContinue;
+    private boolean resolved;
 
     public BackupFailedScreen(@Nullable Screen parent, Runnable onBack, Runnable onContinue) {
         super(parent, Component.translatable("title.bclib.datafixer.backup_failed"), 10, 10, 10);
-        this.onBack = onBack;
-        this.onContinue = onContinue;
+        this.onBack = Objects.requireNonNull(onBack, "onBack");
+        this.onContinue = Objects.requireNonNull(onContinue, "onContinue");
     }
 
     @Override
     public void onClose() {
-        onBack.run();
+        resolveBack();
     }
 
     @Override
@@ -41,13 +43,25 @@ public class BackupFailedScreen extends BCLibLayoutScreen {
                 fit(),
                 fit(),
                 Component.translatable("title.bclib.datafixer.backup_failed.back")
-        ).onPress((button) -> onBack.run());
+        ).onPress((button) -> resolveBack());
         row.addSpacer(6);
         row.addButton(
                 fit(),
                 fit(),
                 Component.translatable("title.bclib.datafixer.backup_failed.continue")
-        ).onPress((button) -> onContinue.run());
+        ).onPress((button) -> resolveContinue());
         return grid;
+    }
+
+    private void resolveBack() {
+        if (resolved) return;
+        resolved = true;
+        onBack.run();
+    }
+
+    private void resolveContinue() {
+        if (resolved) return;
+        resolved = true;
+        onContinue.run();
     }
 }

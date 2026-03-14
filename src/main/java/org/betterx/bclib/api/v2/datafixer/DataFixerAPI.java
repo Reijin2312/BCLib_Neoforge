@@ -243,26 +243,40 @@ public class DataFixerAPI {
 
             if (showUI) {
                 Thread fixerThread = new Thread(() -> {
-                    final State state = runner.get();
+                    State computedState;
+                    try {
+                        computedState = runner.get();
+                    } catch (Throwable ex) {
+                        LOGGER.error("Unexpected exception while fixing level '" + levelID + "': " + ex.getMessage());
+                        ex.printStackTrace();
+                        State failedState = new State();
+                        failedState.didFail = true;
+                        failedState.addError(ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage());
+                        failedState.errors.add(0, "Unexpected exception in DataFixer");
+                        computedState = failedState;
+                    }
+                    final State resultState = computedState;
 
                     Minecraft.getInstance()
                              .execute(() -> {
                                  if (profile != null && showUI) {
-                                     if (state.backupFailed) {
+                                     if (resultState.backupFailed) {
                                          showBackupFailedScreen(
-                                                 () -> Minecraft.getInstance().setScreen(null),
+                                                 () -> onResume.accept(false),
                                                  () -> runFixesRef.get().accept(false, applyFixes)
                                          );
                                          return;
                                      }
 
                                      //something went wrong, show the user our error
-                                     if (state.didFail || state.hasError()) {
-                                         showLevelFixErrorScreen(state, (markFixed) -> {
+                                     if (resultState.didFail || resultState.hasError()) {
+                                         showLevelFixErrorScreen(resultState, (markFixed) -> {
                                              if (markFixed) {
                                                  profile.markApplied();
+                                                 onResume.accept(applyFixes);
+                                             } else {
+                                                 onResume.accept(false);
                                              }
-                                             onResume.accept(applyFixes);
                                          });
                                      } else {
                                          onResume.accept(applyFixes);
@@ -270,13 +284,13 @@ public class DataFixerAPI {
                                  }
                              });
 
-                });
+                }, "BCLib-DataFixer");
                 fixerThread.start();
             } else {
-                State state = runner.get();
-                if (state.hasError()) {
+                State resultState = runner.get();
+                if (resultState.hasError()) {
                     LOGGER.error("There were Errors while fixing the Level:");
-                    LOGGER.error(state.getErrorMessage());
+                    LOGGER.error(resultState.getErrorMessage());
                 }
             }
         };
