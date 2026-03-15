@@ -57,19 +57,34 @@ public abstract class AnvilScreenMixin extends ItemCombinerScreen<AnvilMenu> {
             widget.visible = false;
             addRenderableWidget(widget);
         }
+
+        bcl_refreshRecipeButtons();
     }
 
     @Inject(remap = false, method = "slotChanged", at = @At("HEAD"), cancellable = true, require = 0)
     public void be_onSlotUpdate(AbstractContainerMenu handler, int slotId, ItemStack stack, CallbackInfo info) {
-        AnvilScreenHandlerExtended anvilHandler = (AnvilScreenHandlerExtended) handler;
-        if (anvilHandler.bcl_getCurrentRecipe() != null) {
-            boolean visible = anvilHandler.bcl_getRecipes().size() > 1;
-            bcl_buttons.forEach(button -> button.visible = visible);
+        if (bcl_refreshRecipeButtons()) {
             name.setValue("");
             info.cancel();
-        } else {
-            bcl_buttons.forEach(button -> button.visible = false);
         }
+    }
+
+    @Inject(remap = false, method = "containerTick", at = @At("TAIL"), require = 0)
+    private void bcl_refreshButtonsOnTick(CallbackInfo info) {
+        bcl_refreshRecipeButtons();
+    }
+
+    @Unique
+    private boolean bcl_refreshRecipeButtons() {
+        if (bcl_buttons.isEmpty()) {
+            return false;
+        }
+
+        AnvilScreenHandlerExtended anvilHandler = (AnvilScreenHandlerExtended) menu;
+        boolean hasRecipe = anvilHandler.bcl_hasActiveRecipe();
+        boolean visible = hasRecipe && anvilHandler.bcl_getSyncedRecipeCount() > 1;
+        bcl_buttons.forEach(button -> button.visible = visible);
+        return hasRecipe;
     }
 
     @Unique

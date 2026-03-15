@@ -17,6 +17,8 @@ import net.minecraft.world.level.storage.loot.LootTable;
 
 import java.util.function.Consumer;
 import org.jetbrains.annotations.NotNull;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 /**
  * Base class for a default Block.
@@ -72,7 +74,9 @@ public class BaseBlock extends Block implements BlockLootProvider, BlockModelPro
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createCubeModel(this);
     }
 

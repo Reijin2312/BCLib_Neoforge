@@ -13,6 +13,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 
 public abstract class BaseBarkBlock extends BaseRotatedPillarBlock {
@@ -21,7 +23,9 @@ public abstract class BaseBarkBlock extends BaseRotatedPillarBlock {
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         var res = TextureMapping.getBlockTexture(this);
         var log = Identifier.fromNamespaceAndPath(res.getNamespace(), res
                 .getPath()

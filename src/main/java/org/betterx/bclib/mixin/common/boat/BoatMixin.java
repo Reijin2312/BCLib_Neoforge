@@ -2,17 +2,15 @@ package org.betterx.bclib.mixin.common.boat;
 
 import org.betterx.bclib.items.boat.BoatTypeOverride;
 import org.betterx.bclib.items.boat.CustomBoatTypeOverride;
+import org.betterx.bclib.util.BCLAttachments;
 
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.entity.vehicle.boat.AbstractChestBoat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,50 +21,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = AbstractBoat.class)
 public abstract class BoatMixin implements CustomBoatTypeOverride {
     @Unique
-    private static final EntityDataAccessor<Integer> BCL_CUSTOM_TYPE = SynchedEntityData.defineId(
-            AbstractBoat.class,
-            EntityDataSerializers.INT
-    );
-    @Unique
-    private static final int BCL_NO_CUSTOM_TYPE = -1;
-
-    @Unique
     private BoatTypeOverride bcl_type = null;
-
-    @Inject(method = "defineSynchedData", at = @At("TAIL"), remap = false)
-    private void bclib_defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
-        builder.define(BCL_CUSTOM_TYPE, BCL_NO_CUSTOM_TYPE);
-    }
 
     @Override
     public void bcl_setCustomType(BoatTypeOverride type) {
         bcl_type = type;
-        this.bclib_entityData().set(BCL_CUSTOM_TYPE, type == null ? BCL_NO_CUSTOM_TYPE : type.ordinal());
+        this.bclib_setTypeNameInAttachment(type == null ? null : type.name());
     }
 
     @Override
     public BoatTypeOverride bcl_getCustomType() {
-        int id = this.bclib_entityData().get(BCL_CUSTOM_TYPE);
-        if (id == BCL_NO_CUSTOM_TYPE) {
+        String typeName = this.bclib_getTypeNameFromAttachment();
+        if (typeName == null) {
             bcl_type = null;
             return null;
         }
 
-        bcl_type = BoatTypeOverride.byId(id);
-        return bcl_type;
-    }
-
-    @Inject(method = "addAdditionalSaveData", at = @At("HEAD"), remap = false)
-    private void bclib_addAdditionalSaveData(ValueOutput valueOutput, CallbackInfo ci) {
-        BoatTypeOverride type = this.bcl_getCustomType();
-        if (type != null) {
-            valueOutput.putString("cType", type.name());
+        if (bcl_type != null && typeName.equals(bcl_type.name())) {
+            return bcl_type;
         }
+
+        bcl_type = BoatTypeOverride.byName(typeName);
+        return bcl_type;
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("HEAD"), remap = false)
     private void bclib_readAdditionalSaveData(ValueInput valueInput, CallbackInfo ci) {
-        this.bcl_setCustomType(valueInput.getString("cType").map(BoatTypeOverride::byName).orElse(null));
+        if (this.bclib_getTypeNameFromAttachment() != null) {
+            return;
+        }
+        valueInput.getString("cType").ifPresent(typeName -> this.bcl_setCustomType(BoatTypeOverride.byName(typeName)));
     }
 
     @Inject(method = "getDropItem", at = @At("HEAD"), cancellable = true, remap = false)
@@ -96,7 +80,27 @@ public abstract class BoatMixin implements CustomBoatTypeOverride {
     }
 
     @Unique
-    private SynchedEntityData bclib_entityData() {
-        return ((AbstractBoat) (Object) this).getEntityData();
+    private String bclib_getTypeNameFromAttachment() {
+        if (BCLAttachments.BOAT_CUSTOM_TYPE == null) {
+            return bcl_type == null ? null : bcl_type.name();
+        }
+
+        IAttachmentHolder holder = (IAttachmentHolder) (Object) this;
+        String typeName = holder.getExistingDataOrNull(BCLAttachments.BOAT_CUSTOM_TYPE);
+        return typeName == null || typeName.isEmpty() ? null : typeName;
+    }
+
+    @Unique
+    private void bclib_setTypeNameInAttachment(String typeName) {
+        if (BCLAttachments.BOAT_CUSTOM_TYPE == null) {
+            return;
+        }
+
+        IAttachmentHolder holder = (IAttachmentHolder) (Object) this;
+        if (typeName == null || typeName.isEmpty()) {
+            holder.removeData(BCLAttachments.BOAT_CUSTOM_TYPE);
+        } else {
+            holder.setData(BCLAttachments.BOAT_CUSTOM_TYPE, typeName);
+        }
     }
 }

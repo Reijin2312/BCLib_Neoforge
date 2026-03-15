@@ -16,6 +16,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 
 import org.jetbrains.annotations.NotNull;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseTaburet extends AbstractChair {
     private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 10, 14);
@@ -52,7 +54,9 @@ public abstract class BaseTaburet extends AbstractChair {
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         BCLModels.createTaburetBlockModel(generator, this, this.baseMaterial);
     }
 }

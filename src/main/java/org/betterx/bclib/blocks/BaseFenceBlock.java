@@ -8,15 +8,11 @@ import org.betterx.bclib.client.models.PatternsHelper;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 import org.betterx.wover.block.api.BlockTagProvider;
 import org.betterx.wover.block.api.model.BlockModelProvider;
-import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
 import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
 import com.mojang.math.Quadrant;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
@@ -30,6 +26,8 @@ import net.minecraft.world.level.block.state.properties.BlockSetType;
 import java.util.Map;
 import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseFenceBlock extends FenceBlock implements RuntimeBlockModelProvider, BlockModelProvider, BlockTagProvider, ItemTagProvider, DropSelfLootProvider<BaseFenceBlock> {
     private final Block parent;
@@ -41,14 +39,14 @@ public abstract class BaseFenceBlock extends FenceBlock implements RuntimeBlockM
 
 
     @Override
-    public BlockModel getItemModel(Identifier blockId) {
+    public Object getItemModel(Identifier blockId) {
         Identifier parentId = BuiltInRegistries.BLOCK.getKey(parent);
         Optional<String> pattern = PatternsHelper.createJson(BasePatterns.ITEM_FENCE, parentId);
         return ModelsHelper.fromPattern(pattern);
     }
 
     @Override
-    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
+    public @Nullable Object getBlockModel(Identifier blockId, BlockState blockState) {
         Identifier parentId = BuiltInRegistries.BLOCK.getKey(parent);
         String path = blockId.getPath();
         Optional<String> pattern = Optional.empty();
@@ -62,10 +60,11 @@ public abstract class BaseFenceBlock extends FenceBlock implements RuntimeBlockM
     }
 
     @Override
-    public BlockStateModel.UnbakedRoot getModelVariant(
+    @SuppressWarnings("rawtypes")
+    public Object getModelVariant(
             Identifier stateId,
             BlockState blockState,
-            Map<Identifier, UnbakedModel> modelCache
+            Map modelCache
     ) {
         Identifier postId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, "_post");
         Identifier sideId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, "_side");
@@ -95,8 +94,16 @@ public abstract class BaseFenceBlock extends FenceBlock implements RuntimeBlockM
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
-        generator.createFence(parent, this);
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+        try {
+            modelGenerator
+                    .getClass()
+                    .getMethod("createFence", Block.class, Block.class)
+                    .invoke(modelGenerator, parent, this);
+        } catch (ReflectiveOperationException ex) {
+            throw new IllegalStateException("Failed to provide models for BaseFenceBlock", ex);
+        }
     }
 
     @Override

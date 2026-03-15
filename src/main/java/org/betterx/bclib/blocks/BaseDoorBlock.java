@@ -27,6 +27,8 @@ import net.minecraft.world.level.storage.loot.LootParams;
 
 import java.util.Collections;
 import java.util.List;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseDoorBlock extends DoorBlock implements RenderLayerProvider, BlockModelProvider, BlockTagProvider, ItemTagProvider {
     protected BaseDoorBlock(Block source, BlockSetType type) {
@@ -51,7 +53,9 @@ public abstract class BaseDoorBlock extends DoorBlock implements RenderLayerProv
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.vanillaGenerator.createDoor(this);
     }
 
@@ -66,7 +70,6 @@ public abstract class BaseDoorBlock extends DoorBlock implements RenderLayerProv
     }
 
     //    @Override
-//    @OnlyIn(Dist.CLIENT)
 //    public @Nullable BlockModel getBlockModel(Identifier resourceLocation, BlockState blockState) {
 //        DoorType doorType = getDoorType(blockState);
 //        Optional<String> pattern = PatternsHelper.createJson(BasePatterns.BLOCK_DOOR_BOTTOM, resourceLocation);
@@ -87,7 +90,6 @@ public abstract class BaseDoorBlock extends DoorBlock implements RenderLayerProv
 //    }
 //
 //    @Override
-//    @OnlyIn(Dist.CLIENT)
 //    public UnbakedModel getModelVariant(
 //            ModelResourceLocation stateId,
 //            BlockState blockState,

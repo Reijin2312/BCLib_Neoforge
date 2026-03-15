@@ -32,6 +32,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 
 import org.jetbrains.annotations.NotNull;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseBarrelBlock extends BarrelBlock implements BlockModelProvider, BlockTagProvider, ItemTagProvider, DropSelfLootProvider<BaseBarrelBlock> {
     BaseBarrelBlock(Block source) {
@@ -83,7 +85,9 @@ public abstract class BaseBarrelBlock extends BarrelBlock implements BlockModelP
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createBarrel(this);
     }
 

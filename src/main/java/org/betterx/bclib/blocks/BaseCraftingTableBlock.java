@@ -15,6 +15,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CraftingTableBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseCraftingTableBlock extends CraftingTableBlock implements DropSelfLootProvider<BaseCraftingTableBlock>, BlockModelProvider, BlockTagProvider, ItemTagProvider {
     protected BaseCraftingTableBlock(Block source) {
@@ -37,7 +39,9 @@ public abstract class BaseCraftingTableBlock extends CraftingTableBlock implemen
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.vanillaGenerator.createCraftingTableLike(this, this, BaseCraftingTableBlock::craftingTableTextureMapping);
     }
 
@@ -52,13 +56,11 @@ public abstract class BaseCraftingTableBlock extends CraftingTableBlock implemen
     }
 
 //    @Override
-//    @OnlyIn(Dist.CLIENT)
 //    public BlockModel getItemModel(Identifier resourceLocation) {
 //        return getBlockModel(resourceLocation, defaultBlockState());
 //    }
 //
 //    @Override
-//    @OnlyIn(Dist.CLIENT)
 //    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
 //        String blockName = blockId.getPath();
 //        Optional<String> pattern = PatternsHelper.createJson(BasePatterns.BLOCK_SIDED, new HashMap<String, String>() {

@@ -9,9 +9,6 @@ import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 
 import com.mojang.math.Quadrant;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -57,12 +54,12 @@ public abstract class BaseBarsBlock extends IronBarsBlock implements RuntimeBloc
     }
 
     @Override
-    public BlockModel getItemModel(Identifier resourceLocation) {
+    public Object getItemModel(Identifier resourceLocation) {
         return ModelsHelper.createBlockItem(resourceLocation);
     }
 
     @Override
-    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
+    public @Nullable Object getBlockModel(Identifier blockId, BlockState blockState) {
         Identifier thisId = BuiltInRegistries.BLOCK.getKey(this);
         String path = blockId.getPath();
         Optional<String> pattern = Optional.empty();
@@ -76,10 +73,11 @@ public abstract class BaseBarsBlock extends IronBarsBlock implements RuntimeBloc
     }
 
     @Override
-    public BlockStateModel.UnbakedRoot getModelVariant(
+    @SuppressWarnings("rawtypes")
+    public Object getModelVariant(
             Identifier stateId,
             BlockState blockState,
-            Map<Identifier, UnbakedModel> modelCache
+            Map modelCache
     ) {
         Identifier postId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, "_post");
         Identifier sideId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, "_side");

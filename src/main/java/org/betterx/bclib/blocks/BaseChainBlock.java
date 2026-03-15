@@ -9,9 +9,6 @@ import org.betterx.bclib.client.render.BCLRenderLayer;
 import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Blocks;
@@ -36,21 +33,22 @@ public abstract class BaseChainBlock extends ChainBlock implements RuntimeBlockM
 
 
     @Override
-    public BlockModel getItemModel(Identifier blockId) {
+    public Object getItemModel(Identifier blockId) {
         return ModelsHelper.createItemModel(blockId);
     }
 
     @Override
-    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
+    public @Nullable Object getBlockModel(Identifier blockId, BlockState blockState) {
         Optional<String> pattern = PatternsHelper.createJson(BasePatterns.BLOCK_CHAIN, blockId);
         return ModelsHelper.fromPattern(pattern);
     }
 
     @Override
-    public BlockStateModel.UnbakedRoot getModelVariant(
+    @SuppressWarnings("rawtypes")
+    public Object getModelVariant(
             Identifier stateId,
             BlockState blockState,
-            Map<Identifier, UnbakedModel> modelCache
+            Map modelCache
     ) {
         Direction.Axis axis = blockState.getValue(AXIS);
         Identifier modelId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState);

@@ -4,6 +4,7 @@ import org.betterx.bclib.client.render.BCLRenderLayer;
 import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.wover.block.api.model.BlockModelProvider;
 import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
+import org.betterx.wover.block.api.model.WoverBlockModelGeneratorsAccess;
 import org.betterx.wover.loot.api.BlockLootProvider;
 import org.betterx.wover.loot.api.LootLookupProvider;
 
@@ -11,6 +12,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -29,6 +32,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BasePlantBlock extends BaseBlockNotFull implements RenderLayerProvider, BonemealableBlock, BlockLootProvider, BlockModelProvider {
     private static final VoxelShape SHAPE = box(4, 0, 4, 12, 14, 12);
@@ -101,8 +106,15 @@ public abstract class BasePlantBlock extends BaseBlockNotFull implements RenderL
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
-        generator.createCrossBlock(this, false);
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
+        Identifier modelLocation = ModelTemplates.CROSS.create(
+                this,
+                TextureMapping.cross(this),
+                generator.modelOutput()
+        );
+        generator.acceptBlockState(WoverBlockModelGeneratorsAccess.createSimpleBlock(this, modelLocation));
         generator.createFlatItem(this);
     }
 

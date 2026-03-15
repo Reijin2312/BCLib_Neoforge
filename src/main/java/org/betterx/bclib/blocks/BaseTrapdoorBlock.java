@@ -11,6 +11,7 @@ import org.betterx.bclib.client.render.BCLRenderLayer;
 import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.wover.block.api.BlockTagProvider;
 import org.betterx.wover.block.api.model.BlockModelProvider;
+import org.betterx.wover.block.api.model.DatagenModelDispatch;
 import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
 import org.betterx.wover.item.api.ItemTagProvider;
 import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
@@ -18,8 +19,6 @@ import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
 import com.mojang.math.Quadrant;
 import net.minecraft.client.data.models.BlockModelGenerators;
-import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
-import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.renderer.block.model.VariantMutator;
@@ -33,6 +32,8 @@ import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.Half;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 
 public abstract class BaseTrapdoorBlock extends TrapDoorBlock implements RenderLayerProvider, BlockModelProvider, BlockTagProvider, ItemTagProvider, DropSelfLootProvider<BaseTrapdoorBlock> {
@@ -87,7 +88,9 @@ public abstract class BaseTrapdoorBlock extends TrapDoorBlock implements RenderL
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+        WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         final var id = TextureMapping.getBlockTexture(this);
         final var mapping = new TextureMapping()
                 .put(TextureSlot.TEXTURE, id)
@@ -98,14 +101,14 @@ public abstract class BaseTrapdoorBlock extends TrapDoorBlock implements RenderL
 
         final var model = BCLModels.TRAPDOOR.create(this, mapping, generator.modelOutput());
 
-        final var props = PropertyDispatch.initial(HALF, OPEN, FACING);
+        final Object props = DatagenModelDispatch.propertyDispatchInitial(HALF, OPEN, FACING);
         final Direction[] directions = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
         final boolean[] open = {true, false};
         final Half[] halfs = {Half.TOP, Half.BOTTOM};
         for (Direction dir : directions) {
             for (Half half : halfs) {
                 for (boolean isOpen : open) {
-                    props.select(half, isOpen, dir, BlockModelGenerators
+                    DatagenModelDispatch.propertyDispatchSelect(props, half, isOpen, dir, BlockModelGenerators
                             .plainVariant(model)
                             .with(VariantMutator.X_ROT.withValue(xRotationForState(half == Half.TOP, isOpen, dir)))
                             .with(VariantMutator.Y_ROT.withValue(yRotationForState(half == Half.TOP, isOpen, dir)))
@@ -114,9 +117,7 @@ public abstract class BaseTrapdoorBlock extends TrapDoorBlock implements RenderL
             }
         }
 
-        generator.acceptBlockState(MultiVariantGenerator
-                .dispatch(this)
-                .with(props));
+        generator.acceptBlockState(DatagenModelDispatch.dispatchWith(this, props));
     }
 
     public static class Wood extends BaseTrapdoorBlock implements BehaviourWood {

@@ -9,15 +9,17 @@ import org.betterx.bclib.client.models.BCLModels;
 import org.betterx.bclib.client.render.BCLRenderLayer;
 import org.betterx.bclib.interfaces.RenderLayerProvider;
 import org.betterx.wover.block.api.model.BlockModelProvider;
+import org.betterx.wover.block.api.model.DatagenModelDispatch;
 import org.betterx.wover.block.api.model.WoverBlockModelGenerators;
 import org.betterx.wover.block.api.model.WoverBlockModelGeneratorsAccess;
 import net.minecraft.client.data.models.BlockModelGenerators;
-import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 
 public abstract class BaseLadderBlock extends LadderBlock implements RenderLayerProvider, BehaviourClimable, DropSelfLootProvider<BaseLadderBlock>, BlockModelProvider {
@@ -35,14 +37,16 @@ public abstract class BaseLadderBlock extends LadderBlock implements RenderLayer
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+        WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         var mapping = new TextureMapping()
                 .put(TextureSlot.TEXTURE, TextureMapping.getBlockTexture(this));
         var location = BCLModels.LADDER.create(this, mapping, generator.modelOutput());
 
-        generator.acceptBlockState(MultiVariantGenerator
-                .dispatch(this, BlockModelGenerators.plainVariant(location))
-                .with(WoverBlockModelGeneratorsAccess.createHorizontalFacingDispatch()));
+        Object dispatch = DatagenModelDispatch.multiVariantDispatch(this, BlockModelGenerators.plainVariant(location));
+        dispatch = DatagenModelDispatch.withDispatch(dispatch, WoverBlockModelGeneratorsAccess.createHorizontalFacingDispatch());
+        generator.acceptBlockState(dispatch);
 
         generator.createFlatItem(this);
     }

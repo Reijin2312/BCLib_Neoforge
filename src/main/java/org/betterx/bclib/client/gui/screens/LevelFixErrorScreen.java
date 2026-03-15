@@ -13,11 +13,17 @@ import net.minecraft.network.chat.Component;
 public class LevelFixErrorScreen extends BCLibLayoutScreen {
     private final String[] errors;
     final Listener onContinue;
+    private boolean resolved;
 
     public LevelFixErrorScreen(Screen parent, String[] errors, Listener onContinue) {
         super(parent, Component.translatable("title.bclib.datafixer.error"), 10, 10, 10);
         this.errors = errors;
         this.onContinue = onContinue;
+    }
+
+    @Override
+    public void onClose() {
+        resolve(false);
     }
 
 
@@ -49,19 +55,22 @@ public class LevelFixErrorScreen extends BCLibLayoutScreen {
                 fit(), fit(),
                 Component.translatable("title.bclib.datafixer.error.continue")
         ).setAlpha(0.5f).onPress((n) -> {
-            onClose();
-            onContinue.doContinue(true);
+            resolve(true);
         });
         row.addSpacer(4);
         row.addButton(
                 fit(), fit(),
                 CommonComponents.GUI_CANCEL
-        ).onPress((n) -> {
-            this.minecraft.setScreen(null);
-        });
+        ).onPress((n) -> resolve(false));
 
 
         return grid;
+    }
+
+    private void resolve(boolean markFixed) {
+        if (resolved) return;
+        resolved = true;
+        onContinue.doContinue(markFixed);
     }
 
     public interface Listener {

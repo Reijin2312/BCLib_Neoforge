@@ -34,6 +34,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class AbstractVineBlock extends BaseBlockNotFull implements RenderLayerProvider, BonemealableBlock, BehaviourVine, BlockLootProvider, BlockModelProvider {
     private static final VoxelShape VOXEL_SHAPE = box(2, 0, 2, 14, 16, 14);
@@ -170,7 +172,9 @@ public abstract class AbstractVineBlock extends BaseBlockNotFull implements Rend
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createCubeModel(this);
         generator.createFlatItem(this);
     }

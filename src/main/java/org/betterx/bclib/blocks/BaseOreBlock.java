@@ -9,7 +9,6 @@ import org.betterx.wover.loot.api.BlockLootProvider;
 import org.betterx.wover.loot.api.LootLookupProvider;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -96,7 +95,7 @@ public class BaseOreBlock extends DropExperienceBlock implements RuntimeBlockMod
     }
 
     @Override
-    public BlockModel getItemModel(Identifier resourceLocation) {
+    public Object getItemModel(Identifier resourceLocation) {
         return getBlockModel(resourceLocation, defaultBlockState());
     }
 

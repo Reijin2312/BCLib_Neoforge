@@ -37,6 +37,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 
 import org.jetbrains.annotations.NotNull;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseDoublePlantBlock extends BaseBlockNotFull implements RenderLayerProvider, BonemealableBlock, BlockLootProvider, BlockModelProvider {
     private static final VoxelShape SHAPE = box(4, 2, 4, 12, 16, 12);
@@ -160,7 +162,9 @@ public abstract class BaseDoublePlantBlock extends BaseBlockNotFull implements R
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createCubeModel(this);
         generator.createFlatItem(this);
     }

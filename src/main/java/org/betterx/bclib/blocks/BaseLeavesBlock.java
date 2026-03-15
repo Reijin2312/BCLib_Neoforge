@@ -8,7 +8,6 @@ import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 import org.betterx.wover.loot.api.BlockLootProvider;
 import org.betterx.wover.loot.api.LootLookupProvider;
 
-import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
@@ -77,7 +76,7 @@ public abstract class BaseLeavesBlock extends LeavesBlock implements RuntimeBloc
     }
 
     @Override
-    public BlockModel getItemModel(Identifier resourceLocation) {
+    public Object getItemModel(Identifier resourceLocation) {
         return getBlockModel(resourceLocation, defaultBlockState());
     }
 

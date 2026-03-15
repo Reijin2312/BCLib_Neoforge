@@ -30,6 +30,8 @@ import net.minecraft.world.level.material.MapColor;
 
 
 import java.util.function.Supplier;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseHangingSignBlock extends CeilingHangingSignBlock implements BlockModelProvider, CustomBlockItemProvider, BlockTagProvider, ItemTagProvider {
     protected final Supplier<BaseWallHangingSignBlock> wallSign;
@@ -97,7 +99,9 @@ public abstract class BaseHangingSignBlock extends CeilingHangingSignBlock imple
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createHangingSign(parent, this, getWallSignBlock());
     }
 

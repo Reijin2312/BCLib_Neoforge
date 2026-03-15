@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 public class BackupFailedScreen extends BCLibLayoutScreen {
     private final Runnable onBack;
     private final Runnable onContinue;
+    private boolean resolved;
 
     public BackupFailedScreen(@Nullable Screen parent, Runnable onBack, Runnable onContinue) {
         super(parent, Component.translatable("title.bclib.datafixer.backup_failed"), 10, 10, 10);
@@ -22,7 +23,7 @@ public class BackupFailedScreen extends BCLibLayoutScreen {
 
     @Override
     public void onClose() {
-        onBack.run();
+        resolveBack();
     }
 
     @Override
@@ -38,13 +39,25 @@ public class BackupFailedScreen extends BCLibLayoutScreen {
                 fit(),
                 fit(),
                 Component.translatable("title.bclib.datafixer.backup_failed.back")
-        ).onPress((button) -> onBack.run());
+        ).onPress((button) -> resolveBack());
         row.addSpacer(6);
         row.addButton(
                 fit(),
                 fit(),
                 Component.translatable("title.bclib.datafixer.backup_failed.continue")
-        ).onPress((button) -> onContinue.run());
+        ).onPress((button) -> resolveContinue());
         return grid;
+    }
+
+    private void resolveBack() {
+        if (resolved) return;
+        resolved = true;
+        onBack.run();
+    }
+
+    private void resolveContinue() {
+        if (resolved) return;
+        resolved = true;
+        onContinue.run();
     }
 }

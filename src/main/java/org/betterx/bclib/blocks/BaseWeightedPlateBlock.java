@@ -6,9 +6,6 @@ import org.betterx.bclib.client.models.ModelsHelper;
 import org.betterx.bclib.client.models.PatternsHelper;
 import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
@@ -38,12 +35,12 @@ public class BaseWeightedPlateBlock extends WeightedPressurePlateBlock implement
     }
 
     @Override
-    public BlockModel getItemModel(Identifier resourceLocation) {
+    public Object getItemModel(Identifier resourceLocation) {
         return getBlockModel(resourceLocation, defaultBlockState());
     }
 
     @Override
-    public @Nullable BlockModel getBlockModel(Identifier resourceLocation, BlockState blockState) {
+    public @Nullable Object getBlockModel(Identifier resourceLocation, BlockState blockState) {
         Identifier parentId = BuiltInRegistries.BLOCK.getKey(parent);
         Optional<String> pattern;
         if (blockState.getValue(POWER) > 0) {
@@ -55,10 +52,11 @@ public class BaseWeightedPlateBlock extends WeightedPressurePlateBlock implement
     }
 
     @Override
-    public BlockStateModel.UnbakedRoot getModelVariant(
+    @SuppressWarnings("rawtypes")
+    public Object getModelVariant(
             Identifier stateId,
             BlockState blockState,
-            Map<Identifier, UnbakedModel> modelCache
+            Map modelCache
     ) {
         String state = blockState.getValue(POWER) > 0 ? "_down" : "_up";
         Identifier modelId = RuntimeBlockModelProvider.remapModelIdentifier(stateId, blockState, state);

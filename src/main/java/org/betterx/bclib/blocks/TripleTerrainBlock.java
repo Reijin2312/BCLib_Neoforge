@@ -7,10 +7,7 @@ import org.betterx.bclib.interfaces.RuntimeBlockModelProvider;
 import org.betterx.wover.block.api.BlockProperties.TripleShape;
 
 import com.mojang.math.Quadrant;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.block.model.Variant;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -117,12 +114,12 @@ public class TripleTerrainBlock extends BaseTerrainBlock implements RuntimeBlock
     }
 
     @Override
-    public BlockModel getItemModel(Identifier blockId) {
+    public Object getItemModel(Identifier blockId) {
         return getBlockModel(blockId, defaultBlockState());
     }
 
     @Override
-    public @Nullable BlockModel getBlockModel(Identifier blockId, BlockState blockState) {
+    public @Nullable Object getBlockModel(Identifier blockId, BlockState blockState) {
         String path = blockId.getPath();
         Optional<String> pattern;
         if (isMiddle(blockState)) {
@@ -139,10 +136,11 @@ public class TripleTerrainBlock extends BaseTerrainBlock implements RuntimeBlock
     }
 
     @Override
-    public BlockStateModel.UnbakedRoot getModelVariant(
+    @SuppressWarnings("rawtypes")
+    public Object getModelVariant(
             Identifier stateId,
             BlockState blockState,
-            Map<Identifier, UnbakedModel> modelCache
+            Map modelCache
     ) {
         boolean isMiddle = isMiddle(blockState);
         String middle = isMiddle ? "_middle" : "";

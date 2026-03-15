@@ -18,6 +18,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseBarStool extends AbstractChair {
     private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 16, 12);
@@ -81,7 +83,9 @@ public abstract class BaseBarStool extends AbstractChair {
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         BCLModels.createBarStoolBlockModel(generator, this, this.baseMaterial, this.clothMaterial);
     }
 }

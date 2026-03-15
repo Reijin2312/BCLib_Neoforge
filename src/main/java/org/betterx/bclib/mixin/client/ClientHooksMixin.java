@@ -1,5 +1,6 @@
 package org.betterx.bclib.mixin.client;
 
+import org.betterx.bclib.BCLib;
 import org.betterx.bclib.client.render.CustomFogRenderer;
 import org.betterx.bclib.util.BackgroundInfo;
 
@@ -7,6 +8,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.client.renderer.fog.environment.FogEnvironment;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -24,6 +26,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = ClientHooks.class)
 public class ClientHooksMixin {
+    private static final float LEGACY_END_FOG_COLOR_SCALE = 0.6F;
+
     @Inject(remap = false, method = "getFogColor", at = @At("RETURN"), cancellable = true, require = 0)
     private static void bclib_captureFogColor(
             Camera camera,
@@ -41,25 +45,39 @@ public class ClientHooksMixin {
             return;
         }
 
-        float fogRed = color.x;
-        float fogGreen = color.y;
-        float fogBlue = color.z;
-        FogType fogType = camera.getFluidInCamera();
-        if (fogType != FogType.WATER && world != null && world.dimension().equals(Level.END)) {
+        if (BCLib.RUNS_DISTANT_HORIZONS) {
+            float fogRed = Mth.clamp(color.x, 0.0F, 1.0F);
+            float fogGreen = Mth.clamp(color.y, 0.0F, 1.0F);
+            float fogBlue = Mth.clamp(color.z, 0.0F, 1.0F);
+
+            BackgroundInfo.fogColorRed = fogRed;
+            BackgroundInfo.fogColorGreen = fogGreen;
+            BackgroundInfo.fogColorBlue = fogBlue;
+            return;
+        }
+
+        if (world.dimension().equals(Level.END) && camera.getFluidInCamera() != FogType.WATER) {
             Entity entity = camera.entity();
-            boolean skip = false;
+            boolean hasNightVision = false;
             if (entity instanceof LivingEntity livingEntity) {
                 MobEffectInstance effect = livingEntity.getEffect(MobEffects.NIGHT_VISION);
-                skip = effect != null && effect.getDuration() > 0;
+                hasNightVision = effect != null && effect.getDuration() > 0;
             }
-            if (!skip) {
-                fogRed *= 4.0F;
-                fogGreen *= 4.0F;
-                fogBlue *= 4.0F;
-                color = new Vector4f(fogRed, fogGreen, fogBlue, color.w);
+
+            if (!hasNightVision) {
+                color.set(
+                        color.x * LEGACY_END_FOG_COLOR_SCALE,
+                        color.y * LEGACY_END_FOG_COLOR_SCALE,
+                        color.z * LEGACY_END_FOG_COLOR_SCALE,
+                        color.w
+                );
                 cir.setReturnValue(color);
             }
         }
+
+        float fogRed = Mth.clamp(color.x, 0.0F, 1.0F);
+        float fogGreen = Mth.clamp(color.y, 0.0F, 1.0F);
+        float fogBlue = Mth.clamp(color.z, 0.0F, 1.0F);
 
         BackgroundInfo.fogColorRed = fogRed;
         BackgroundInfo.fogColorGreen = fogGreen;
@@ -76,6 +94,10 @@ public class ClientHooksMixin {
             FogData fogData,
             CallbackInfo ci
     ) {
+        if (BCLib.RUNS_DISTANT_HORIZONS) {
+            return;
+        }
+
         // NeoForge passes fog render distance in chunks; custom fog math expects blocks.
         CustomFogRenderer.applyFogDensity(camera, renderDistance * 16.0F, fogData);
     }

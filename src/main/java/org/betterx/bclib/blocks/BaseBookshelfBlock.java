@@ -20,6 +20,8 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseBookshelfBlock extends BaseBlock implements BlockTagProvider, BlockLootProvider, BlockModelProvider {
     private final Block topBlock;
@@ -40,7 +42,9 @@ public abstract class BaseBookshelfBlock extends BaseBlock implements BlockTagPr
 //    }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createBookshelf(this, this.topBlock);
     }
 

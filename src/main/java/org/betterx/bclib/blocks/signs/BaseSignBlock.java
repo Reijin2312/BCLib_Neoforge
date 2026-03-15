@@ -29,6 +29,8 @@ import net.minecraft.world.level.material.MapColor;
 
 
 import java.util.function.Supplier;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 @SuppressWarnings("deprecation")
 public abstract class BaseSignBlock extends StandingSignBlock implements BlockModelProvider, CustomBlockItemProvider, BlockTagProvider, ItemTagProvider, DropSelfLootProvider<BaseSignBlock>, BehaviourExplosionResistant {
@@ -88,7 +90,9 @@ public abstract class BaseSignBlock extends StandingSignBlock implements BlockMo
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         final BaseWallSignBlock wallSignBlock = this.getWallSignBlock();
         generator.createSign(this.parent, this, wallSignBlock);
     }

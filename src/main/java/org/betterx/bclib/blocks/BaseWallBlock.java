@@ -13,6 +13,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WallBlock;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 
 public abstract class BaseWallBlock extends WallBlock implements DropSelfLootProvider<BaseWallBlock>, BlockModelProvider, BlockTagProvider {
@@ -29,7 +31,9 @@ public abstract class BaseWallBlock extends WallBlock implements DropSelfLootPro
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createWall(parent, this);
     }
 

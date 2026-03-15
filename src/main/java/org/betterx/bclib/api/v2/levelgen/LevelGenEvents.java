@@ -33,6 +33,11 @@ public class LevelGenEvents {
     }
 
     private static void patchExistingWorldOnServer(LevelStorageSource.LevelStorageAccess storageAccess) {
+        // Dedicated server has no client classes; DataFixerAPI currently depends on client UI classes.
+        if (ModCore.isServer() && !BCLib.isClient()) {
+            return;
+        }
+
         if (ModCore.isServer()) {
             DataFixerAPI.fixData(storageAccess, false, (b) -> {
             });

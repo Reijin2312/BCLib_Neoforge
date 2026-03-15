@@ -14,6 +14,14 @@ public interface AnvilScreenHandlerExtended {
 
     List<RecipeHolder<AnvilRecipe>> bcl_getRecipes();
 
+    default boolean bcl_hasActiveRecipe() {
+        return bcl_getCurrentRecipe() != null;
+    }
+
+    default int bcl_getSyncedRecipeCount() {
+        return bcl_getRecipes().size();
+    }
+
     default void be_nextRecipe() {
         List<RecipeHolder<AnvilRecipe>> recipes = bcl_getRecipes();
         if (recipes.size() < 2) return;
@@ -30,7 +38,7 @@ public interface AnvilScreenHandlerExtended {
         if (recipes.size() < 2) return;
         RecipeHolder<AnvilRecipe> current = bcl_getCurrentRecipe();
         int i = recipes.indexOf(current) - 1;
-        if (i <= 0) {
+        if (i < 0) {
             i = recipes.size() - 1;
         }
         bcl_updateCurrentRecipe(recipes.get(i));

@@ -11,6 +11,8 @@ import org.betterx.wover.tag.api.predefined.CommonBlockTags;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ComposterBlock;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 
 public abstract class BaseComposterBlock extends ComposterBlock implements BlockModelProvider, BlockTagProvider, DropSelfLootProvider<BaseComposterBlock> {
@@ -19,7 +21,9 @@ public abstract class BaseComposterBlock extends ComposterBlock implements Block
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createComposter(this);
     }
 

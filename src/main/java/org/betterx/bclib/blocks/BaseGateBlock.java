@@ -12,6 +12,8 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 
 public abstract class BaseGateBlock extends FenceGateBlock implements BlockModelProvider, BlockTagProvider, DropSelfLootProvider<BaseGateBlock> {
@@ -28,7 +30,9 @@ public abstract class BaseGateBlock extends FenceGateBlock implements BlockModel
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createFenceGate(parent, this);
     }
 

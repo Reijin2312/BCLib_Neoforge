@@ -29,14 +29,14 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="wunderlib"
 mandatory=true
-versionRange="[21.0,)"
+versionRange="[21.11.1,)"
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="wover"
 mandatory=true
-versionRange="[21.0,)"
+versionRange="[21.11.1,)"
 ordering="NONE"
 side="BOTH"
 

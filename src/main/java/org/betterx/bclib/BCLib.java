@@ -10,6 +10,7 @@ import org.betterx.bclib.config.Configs;
 import org.betterx.bclib.recipes.AlloyingRecipe;
 import org.betterx.bclib.recipes.AnvilRecipe;
 import org.betterx.bclib.registry.BaseBlockEntities;
+import org.betterx.bclib.util.BCLAttachments;
 import org.betterx.bclib.util.BCLDataComponents;
 import org.betterx.datagen.bclib.worldgen.BCLAutoBlockTagProvider;
 import org.betterx.datagen.bclib.worldgen.BCLAutoItemTagProvider;
@@ -35,6 +36,7 @@ public class BCLib {
     public static final Logger LOGGER = C.LOG;
 
     public static final boolean RUNS_NULLSCAPE = ModList.get().isLoaded("nullscape");
+    public static final boolean RUNS_DISTANT_HORIZONS = ModList.get().isLoaded("distanthorizons");
 
     public BCLib(IEventBus modBus) {
         initialize(modBus);
@@ -48,6 +50,7 @@ public class BCLib {
     private void initialize(IEventBus modBus) {
         modBus.addListener(BCLibNetwork::registerPayloadHandlers);
         modBus.addListener(BCLibArguments::register);
+        modBus.addListener(net.neoforged.neoforge.registries.RegisterEvent.class, BCLAttachments::register);
         modBus.addListener(net.neoforged.neoforge.registries.RegisterEvent.class, BCLDataComponents::register);
         modBus.addListener(net.neoforged.neoforge.registries.RegisterEvent.class, org.betterx.bclib.registry.BaseBlockEntities::register);
         modBus.addListener(net.neoforged.neoforge.registries.RegisterEvent.class, org.betterx.bclib.recipes.BCLRecipeManager::register);
@@ -55,6 +58,7 @@ public class BCLib {
         org.betterx.wover.block.api.BlockRegistry.hook(modBus);
         org.betterx.wover.item.api.ItemRegistry.hook(modBus);
         LevelGenEvents.register();
+        BCLAttachments.ensureStaticInitialization();
         BCLDataComponents.ensureStaticInitialization();
         BaseBlockEntities.register();
         WorldConfig.registerMod(C);
@@ -63,7 +67,9 @@ public class BCLib {
         CommandRegistry.register();
         BCLBlockTags.ensureStaticallyLoaded();
 
-        BCLibPatch.register();
+        if (isClient()) {
+            BCLibPatch.register();
+        }
         TemplatePiece.ensureStaticInitialization();
         Configs.save();
 

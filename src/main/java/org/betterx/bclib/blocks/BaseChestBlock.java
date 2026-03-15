@@ -38,6 +38,8 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 public abstract class BaseChestBlock extends ChestBlock implements BlockModelProvider, BlockTagProvider, ItemTagProvider, BlockLootProvider {
     private final Block parent;
@@ -53,7 +55,9 @@ public abstract class BaseChestBlock extends ChestBlock implements BlockModelPro
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createChest(parent, this);
 
         generator.createItemModel(

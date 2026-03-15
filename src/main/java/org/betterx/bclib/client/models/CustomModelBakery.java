@@ -107,7 +107,11 @@ public class CustomModelBakery {
         BlockState defaultState = block.defaultBlockState();
 
         Identifier defaultStateID = blockID;
-        BlockStateModel.UnbakedRoot defaultModel = provider.getModelVariant(defaultStateID, defaultState, models);
+        Object defaultModelObj = provider.getModelVariant(defaultStateID, defaultState, models);
+        if (!(defaultModelObj instanceof BlockStateModel.UnbakedRoot defaultModel)) {
+            BCLib.LOGGER.warn("Skip runtime block model: invalid default model type for {}", blockID);
+            return;
+        }
         if (defaultModel == null) {
             BCLib.LOGGER.warn("Skip runtime block model: missing default model for {}", blockID);
             return;
@@ -123,9 +127,13 @@ public class CustomModelBakery {
         } else {
             states.forEach(blockState -> {
                 Identifier stateID = blockID;
-                BlockStateModel.UnbakedRoot model = blockState.equals(defaultState)
-                        ? defaultModel
-                        : provider.getModelVariant(stateID, blockState, models);
+                BlockStateModel.UnbakedRoot model = defaultModel;
+                if (!blockState.equals(defaultState)) {
+                    Object modelObj = provider.getModelVariant(stateID, blockState, models);
+                    if (modelObj instanceof BlockStateModel.UnbakedRoot unbakedModel) {
+                        model = unbakedModel;
+                    }
+                }
                 if (model == null) {
                     BCLib.LOGGER.warn("Skip runtime block model: missing model for {} {}", blockID, blockState);
                     model = defaultModel;
@@ -141,8 +149,8 @@ public class CustomModelBakery {
         Identifier modelKey = itemID;
         if (!models.containsKey(modelKey)) {
             Identifier itemModelLocation = itemID.withPrefix("item/");
-            BlockModel model = provider.getItemModel(modelKey);
-            if (model == null) {
+            Object modelObj = provider.getItemModel(modelKey);
+            if (!(modelObj instanceof BlockModel model)) {
                 BCLib.LOGGER.warn("Skip runtime item model: missing model for {}", itemID);
                 return;
             }

@@ -33,6 +33,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 
 import org.jetbrains.annotations.NotNull;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 @SuppressWarnings("deprecation")
 public class BaseTerrainBlock extends BaseBlock implements BlockLootProvider, BlockModelProvider {
@@ -105,7 +107,9 @@ public class BaseTerrainBlock extends BaseBlock implements BlockLootProvider, Bl
     }
 
     @Override
-    public void provideBlockModels(WoverBlockModelGenerators generator) {
+    @OnlyIn(Dist.CLIENT)
+    public void provideBlockModels(Object modelGenerator) {
+    WoverBlockModelGenerators generator = (WoverBlockModelGenerators) modelGenerator;
         generator.createBlockTopSideBottom(getBaseBlock(), this, true);
     }
 

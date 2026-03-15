@@ -44,6 +44,10 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
     private @Nullable RecipeHolder<AnvilRecipe> bcl_currentRecipe;
     @Unique
     private DataSlot bcl_anvilLevel = DataSlot.standalone();
+    @Unique
+    private DataSlot bcl_recipeCount = DataSlot.standalone();
+    @Unique
+    private DataSlot bcl_hasActiveRecipe = DataSlot.standalone();
 
     public AnvilMenuMixin(
             @Nullable MenuType<?> menuType,
@@ -76,6 +80,8 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
     )
     public void be_initAnvilLevel(int syncId, Inventory inventory, ContainerLevelAccess context, CallbackInfo info) {
         this.bcl_anvilLevel = addDataSlot(DataSlot.standalone());
+        this.bcl_recipeCount = addDataSlot(DataSlot.standalone());
+        this.bcl_hasActiveRecipe = addDataSlot(DataSlot.standalone());
         if (context != ContainerLevelAccess.NULL) {
             int level = context.evaluate((world, blockPos) -> {
                 Block anvilBlock = world.getBlockState(blockPos).getBlock();
@@ -85,6 +91,8 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
         } else {
             bcl_anvilLevel.set(0);
         }
+        bcl_recipeCount.set(0);
+        bcl_hasActiveRecipe.set(0);
     }
 
     @Inject(remap = false, method = "mayPickup", at = @At("HEAD"), cancellable = true, require = 0)
@@ -155,11 +163,19 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
                 if (bcl_currentRecipe == null || !bcl_recipes.contains(bcl_currentRecipe)) {
                     bcl_currentRecipe = bcl_recipes.get(0);
                 }
+                bcl_recipeCount.set(bcl_recipes.size());
+                bcl_hasActiveRecipe.set(1);
                 bcl_updateResult();
                 info.cancel();
             } else {
                 bcl_currentRecipe = null;
+                bcl_recipeCount.set(0);
+                bcl_hasActiveRecipe.set(0);
             }
+        } else {
+            bcl_currentRecipe = null;
+            bcl_recipeCount.set(0);
+            bcl_hasActiveRecipe.set(0);
         }
     }
 
@@ -205,5 +221,15 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu implements AnvilSc
     @Override
     public List<RecipeHolder<AnvilRecipe>> bcl_getRecipes() {
         return bcl_recipes;
+    }
+
+    @Override
+    public boolean bcl_hasActiveRecipe() {
+        return bcl_currentRecipe != null || bcl_hasActiveRecipe.get() > 0;
+    }
+
+    @Override
+    public int bcl_getSyncedRecipeCount() {
+        return Math.max(bcl_recipes.size(), bcl_recipeCount.get());
     }
 }
